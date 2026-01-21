@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Customer Tracking - TruckRoute</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="login-overlay" class="auth-screen">
+        <div class="card login-card">
+            <h2>Customer Login</h2>
+            <input type="text" placeholder="Order / PO Number">
+            <button class="btn btn-primary" onclick="closeLogin()">Track Load</button>
+        </div>
+    </div>
+
+    <main class="container">
+        <div class="card header-card">
+            <h2>Track Your Shipment</h2>
+            <div class="notification-bell">🔔 1 New Update</div>
+        </div>
+
+        <div class="card">
+            <div class="load-status">
+                <strong>Status:</strong> <span class="text-success">In Route</span>
+            </div>
+            <div id="customer-map" class="map-view"></div>
+            <div class="eta-box">
+                <p>Estimated Arrival: <strong>Jan 22, 10:30 AM</strong></p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Load Details</h3>
+            <table class="data-table">
+                <tr><td>PO Number:</td><td>#PO-8829</td></tr>
+                <tr><td>Driver:</td><td>Mike S.</td></tr>
+                <tr><td>Current Loc:</td><td>I-80 Westbound</td></tr>
+            </table>
+            <button class="btn btn-primary" style="width: 100%; margin-top: 15px;" onclick="toggleChat()">
+                Chat with Dispatch/Driver
+            </button>
+        </div>
+    </main>
+
+    <script>
+        function closeLogin() { document.getElementById('login-overlay').style.display = 'none'; }
+    </script>
+</body>
+</html>
