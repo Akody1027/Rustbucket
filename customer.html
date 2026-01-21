@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RuralDrop | Secure Customer Portal</title>
+    <title>RuralDrop | Verify & Order</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -15,7 +15,11 @@
     <script src="https://www.paypal.com/sdk/js?client-id=AZ1st2QfbDjcDTmMwT27gZM2CtVRujmmQoLGSQuoC5HeBUgp1cWOk9NnFtelXrPW5viW2EXpEK3gqHDf&currency=USD"></script>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>[v-cloak] { display: none; }</style>
+    <style>
+        [v-cloak] { display: none; }
+        #verify-map { height: 250px; width: 100%; border-radius: 1.5rem; margin-bottom: 1rem; border: 2px solid #e2e8f0; }
+        .step-card { transition: all 0.3s ease; }
+    </style>
 </head>
 <body class="bg-slate-50 antialiased font-sans">
 
@@ -33,64 +37,74 @@
                 <div class="w-16 h-16 bg-green-100 text-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
                     <i class="fas fa-shield-check"></i>
                 </div>
-                <h2 class="text-2xl font-black">Escrow Active</h2>
-                <p class="text-sm font-bold text-indigo-600 mt-1 uppercase">Driver Status: {{ myOrder.status }}</p>
-            </div>
-            <div class="p-6 bg-slate-50 rounded-3xl border mb-6 text-sm space-y-2">
-                <p><strong>Total Held:</strong> ${{ myOrder.total }}.00</p>
-                <p class="text-slate-500 italic">Funds will be released to the driver only after you confirm delivery.</p>
+                <h2 class="text-2xl font-black">Order Verified</h2>
+                <p class="text-sm font-bold text-indigo-600 mt-1 uppercase tracking-widest">Status: {{ myOrder.status }}</p>
             </div>
             <button @click="cancelOrder" class="w-full bg-red-50 text-red-600 py-4 rounded-2xl font-black text-xs uppercase">Cancel & Refund</button>
         </div>
 
-        <div v-else class="bg-white p-10 rounded-[3rem] shadow-2xl border border-slate-100">
+        <div v-else class="bg-white p-8 rounded-[3rem] shadow-2xl border border-slate-100 step-card">
             
             <div v-if="step === 1">
-                <h2 class="text-2xl font-black mb-6">Where are we going?</h2>
-                <div class="space-y-6">
-                    <div v-for="(pickup, i) in newOrder.pickups" :key="i" class="p-6 bg-slate-50 rounded-3xl border">
-                        <label class="text-[10px] font-black text-slate-400 uppercase">Store Name (Search)</label>
-                        <input :id="'search-' + i" placeholder="Search for store..." class="w-full bg-transparent font-bold outline-none border-b py-2 mb-4 border-slate-200">
-                        
-                        <label class="text-[10px] font-black text-slate-400 uppercase">What do you need?</label>
-                        <textarea v-model="pickup.description" placeholder="Ex: 2 bags of dog food, 1 gallon of milk..." class="w-full bg-transparent text-sm outline-none mt-1" rows="2"></textarea>
+                <h2 class="text-2xl font-black mb-2 tracking-tight">Select Pickup</h2>
+                <p class="text-slate-500 text-sm mb-6">Search and verify the location on the map.</p>
+                
+                <div class="space-y-4">
+                    <div class="relative">
+                        <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Search Location</label>
+                        <input id="pickup-search" placeholder="Enter store name or address..." class="w-full p-4 bg-slate-50 rounded-2xl font-bold border-none outline-none focus:ring-2 focus:ring-indigo-600 mb-4">
                     </div>
-                    <button @click="addStop" class="text-[10px] font-black text-indigo-600 uppercase tracking-widest">+ Add Another Store (+$5)</button>
+
+                    <div id="verify-map"></div>
+
+                    <div v-if="selectedLocation" class="p-4 bg-indigo-50 border border-indigo-100 rounded-2xl mb-4">
+                        <p class="text-[10px] font-black text-indigo-400 uppercase">Selected</p>
+                        <p class="text-sm font-bold text-slate-700">{{ selectedLocation.name }}</p>
+                    </div>
+
+                    <div class="p-6 bg-slate-50 rounded-3xl border">
+                        <label class="text-[10px] font-black text-slate-400 uppercase mb-2 block">Order Type</label>
+                        <div class="flex items-center gap-3 p-3 bg-white rounded-xl border-2 border-indigo-600">
+                            <i class="fas fa-shopping-bag text-indigo-600"></i>
+                            <span class="font-bold text-sm text-slate-800">Order Pickup</span>
+                        </div>
+                        
+                        <label class="text-[10px] font-black text-slate-400 uppercase mt-4 mb-2 block">Order Details (Name/Number)</label>
+                        <textarea v-model="currentDescription" placeholder="Ex: Order #12345 for John Smith..." class="w-full bg-transparent text-sm outline-none" rows="2"></textarea>
+                    </div>
                 </div>
-                <button @click="initDeliverySearch" class="w-full bg-slate-900 text-white py-5 rounded-3xl font-black mt-8">Next: Delivery Address</button>
+                
+                <button @click="confirmStepOne" :disabled="!selectedLocation" :class="!selectedLocation ? 'opacity-50' : ''" class="w-full bg-slate-900 text-white py-5 rounded-3xl font-black mt-8 shadow-xl">Confirm Pickup Location</button>
             </div>
 
             <div v-if="step === 2">
-                <h2 class="text-2xl font-black mb-6">Review & Secure</h2>
+                <h2 class="text-2xl font-black mb-6 tracking-tight">Delivery Details</h2>
                 
-                <div class="space-y-4 mb-8">
-                    <div class="p-4 bg-indigo-50 border border-indigo-100 rounded-2xl">
-                        <p class="text-[10px] font-black text-indigo-400 uppercase">Delivery Destination</p>
-                        <input id="delivery-search" placeholder="Enter home address" class="w-full bg-transparent font-bold outline-none py-2">
+                <div class="space-y-6">
+                    <div class="p-4 bg-slate-50 rounded-2xl border">
+                        <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Enter Home Address</label>
+                        <input id="delivery-search" placeholder="Search your address..." class="w-full bg-transparent font-bold outline-none py-2">
                     </div>
 
-                    <div class="p-6 bg-amber-50 rounded-2xl border border-amber-100 flex gap-4">
-                        <i class="fas fa-lock text-amber-600 mt-1"></i>
-                        <p class="text-xs text-amber-800 leading-relaxed">
-                            <strong>SafeDrop Guarantee:</strong> Your payment is held securely. The driver is not paid until the delivery is confirmed at your door.
+                    <div v-if="newOrder.delivery" class="p-8 bg-slate-900 text-white rounded-[2rem] shadow-xl">
+                        <h4 class="text-[10px] font-bold text-indigo-400 uppercase mb-4 tracking-widest">Run Summary</h4>
+                        <div v-for="p in newOrder.pickups" class="mb-4">
+                            <p class="font-black text-sm text-white">{{ p.locationName }}</p>
+                            <p class="text-xs text-slate-400 italic">"{{ p.description }}"</p>
+                        </div>
+                        <div class="mt-6 pt-6 border-t border-slate-700 flex justify-between items-center">
+                            <span class="font-black">Escrow Total</span>
+                            <span class="text-2xl font-black text-indigo-400">$20.00</span>
+                        </div>
+                        <p class="text-[9px] text-slate-500 mt-4 leading-relaxed">
+                            <i class="fas fa-shield-alt mr-1"></i> Funds are held securely and released only after you confirm the driver has arrived.
                         </p>
-                    </div>
-
-                    <div v-if="newOrder.delivery" class="p-6 bg-slate-900 text-white rounded-3xl">
-                        <h4 class="text-[10px] font-bold text-slate-400 uppercase mb-4">Trip Summary</h4>
-                        <div v-for="p in newOrder.pickups" class="text-sm mb-2 opacity-80 border-l-2 border-indigo-500 pl-3">
-                            {{ p.locationName }}
-                        </div>
-                        <div class="mt-4 pt-4 border-t border-slate-700 flex justify-between items-center">
-                            <span class="font-black">Total Escrow</span>
-                            <span class="text-xl font-black">${{ finalTotal }}.00</span>
-                        </div>
                     </div>
                 </div>
 
-                <div v-if="newOrder.delivery" id="paypal-button-container"></div>
+                <div id="paypal-button-container" class="mt-8"></div>
                 
-                <button @click="step = 1" class="w-full text-slate-400 font-bold mt-6 text-xs uppercase underline">Edit Stores</button>
+                <button @click="step = 1" class="w-full text-slate-400 font-bold mt-6 text-xs uppercase underline">Back to Search</button>
             </div>
         </div>
     </main>
@@ -116,29 +130,65 @@ createApp({
     data() {
         return {
             step: 1, myOrder: null,
-            newOrder: { name: '', pickups: [{locationName: '', lat: null, lng: null, description: ''}], delivery: '', dLat: null, dLng: null }
+            map: null, marker: null,
+            selectedLocation: null,
+            currentDescription: '',
+            newOrder: { name: '', pickups: [], delivery: '', dLat: null, dLng: null }
         }
     },
-    computed: {
-        finalTotal() { return 20 + (this.newOrder.pickups.length - 1) * 5; }
-    },
     methods: {
-        initAutocomplete(index) {
-            const input = document.getElementById('search-' + index);
+        initMap() {
+            this.map = new google.maps.Map(document.getElementById("verify-map"), {
+                center: { lat: 41.2565, lng: -95.9345 },
+                zoom: 12,
+                disableDefaultUI: true,
+                styles: [{ featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] }]
+            });
+
+            const input = document.getElementById("pickup-search");
             const searchBox = new google.maps.places.SearchBox(input);
-            searchBox.addListener('places_changed', () => {
-                const place = searchBox.getPlaces()[0];
-                this.newOrder.pickups[index].locationName = place.name + ", " + place.formatted_address;
-                this.newOrder.pickups[index].lat = place.geometry.location.lat();
-                this.newOrder.pickups[index].lng = place.geometry.location.lng();
+
+            searchBox.addListener("places_changed", () => {
+                const places = searchBox.getPlaces();
+                if (places.length == 0) return;
+
+                const place = places[0];
+                if (!place.geometry || !place.geometry.location) return;
+
+                if (this.marker) this.marker.setMap(null);
+                
+                this.marker = new google.maps.Marker({
+                    map: this.map,
+                    title: place.name,
+                    position: place.geometry.location,
+                    icon: { url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" }
+                });
+
+                this.selectedLocation = {
+                    name: place.name + ", " + (place.formatted_address || ""),
+                    lat: place.geometry.location.lat(),
+                    lng: place.geometry.location.lng()
+                };
+
+                this.map.setCenter(place.geometry.location);
+                this.map.setZoom(16);
             });
         },
-        initDeliverySearch() {
+        confirmStepOne() {
+            this.newOrder.pickups = [{
+                locationName: this.selectedLocation.name,
+                lat: this.selectedLocation.lat,
+                lng: this.selectedLocation.lng,
+                description: this.currentDescription
+            }];
             this.step = 2;
+            this.initDeliverySearch();
+        },
+        initDeliverySearch() {
             setTimeout(() => {
-                const input = document.getElementById('delivery-search');
+                const input = document.getElementById("delivery-search");
                 const searchBox = new google.maps.places.SearchBox(input);
-                searchBox.addListener('places_changed', () => {
+                searchBox.addListener("places_changed", () => {
                     const place = searchBox.getPlaces()[0];
                     this.newOrder.delivery = place.formatted_address;
                     this.newOrder.dLat = place.geometry.location.lat();
@@ -147,25 +197,19 @@ createApp({
                 });
             }, 500);
         },
-        addStop() {
-            this.newOrder.pickups.push({locationName: '', description: ''});
-            setTimeout(() => this.initAutocomplete(this.newOrder.pickups.length - 1), 100);
-        },
         initPayPal() {
             document.getElementById('paypal-button-container').innerHTML = '';
             paypal.Buttons({
                 createOrder: (data, actions) => {
-                    return actions.order.create({
-                        purchase_units: [{ amount: { value: this.finalTotal.toString() } }]
-                    });
+                    return actions.order.create({ purchase_units: [{ amount: { value: "20.00" } }] });
                 },
                 onApprove: (data, actions) => {
-                    return actions.order.capture().then((details) => this.finalizeOrder(details));
+                    return actions.order.capture().then((details) => this.finalize(details));
                 }
             }).render('#paypal-button-container');
         },
-        async finalizeOrder(details) {
-            const o = { ...this.newOrder, id: Date.now(), total: this.finalTotal, status: 'pending_pickup' };
+        async finalize(details) {
+            const o = { ...this.newOrder, id: Date.now(), total: 20, status: 'pending_pickup' };
             await db.ref('orders/' + o.id).set(o);
             this.myOrder = o;
             localStorage.setItem('rd_order_id', o.id);
@@ -179,11 +223,9 @@ createApp({
         }
     },
     mounted() {
-        this.initAutocomplete(0);
+        this.initMap();
         const id = localStorage.getItem('rd_order_id');
-        if(id) {
-            db.ref('orders/' + id).on('value', snap => { this.myOrder = snap.val(); });
-        }
+        if(id) db.ref('orders/' + id).on('value', snap => { this.myOrder = snap.val(); });
     }
 }).mount('#app');
 </script>
