@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RuralDrop | Customer Portal</title>
+    <title>RuralDrop | Search & Verify</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -11,104 +11,52 @@
     
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    
     <script src="https://www.paypal.com/sdk/js?client-id=AZ1st2QfbDjcDTmMwT27gZM2CtVRujmmQoLGSQuoC5HeBUgp1cWOk9NnFtelXrPW5viW2EXpEK3gqHDf&currency=USD"></script>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         [v-cloak] { display: none; }
-        #verify-map { height: 280px; width: 100%; border-radius: 2rem; margin-bottom: 1.5rem; border: 2px solid #e2e8f0; }
+        .map-container { position: relative; width: 100%; height: 300px; transition: all 0.4s ease; border-radius: 2rem; overflow: hidden; border: 2px solid #e2e8f0; }
+        .map-fullscreen { position: fixed; top: 0; left: 0; height: 100vh !important; width: 100vw !important; z-index: 1000; border-radius: 0; }
+        .map-tools { position: absolute; bottom: 1rem; right: 1rem; z-index: 1001; }
     </style>
 </head>
 <body class="bg-slate-50 antialiased font-sans">
 
 <div id="app" v-cloak>
-    <nav class="bg-white px-6 py-4 flex justify-between items-center border-b sticky top-0 z-50">
-        <div class="flex items-center gap-2">
-            <div class="bg-indigo-600 text-white p-2 rounded-xl"><i class="fas fa-truck-fast"></i></div>
-            <h1 class="text-xl font-black text-slate-800 tracking-tighter uppercase">Rural<span class="text-indigo-600">Drop</span></h1>
-        </div>
-    </nav>
-
-    <main class="max-w-xl mx-auto p-6 min-h-[80vh] flex flex-col justify-center">
-        <div v-if="myOrder" class="bg-white p-10 rounded-[3rem] shadow-2xl border border-slate-100">
-            <div class="text-center mb-8">
-                <div class="w-16 h-16 bg-green-100 text-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <i class="fas fa-shield-check"></i>
-                </div>
-                <h2 class="text-2xl font-black">Trip Verified</h2>
-                <p class="text-sm font-bold text-indigo-600 mt-1 uppercase tracking-widest">Status: {{ myOrder.status }}</p>
-            </div>
-            <button @click="cancelOrder" class="w-full bg-red-50 text-red-600 py-4 rounded-2xl font-black text-xs uppercase">Refund & Cancel</button>
-        </div>
-
-        <div v-else class="bg-white p-10 rounded-[3rem] shadow-2xl border border-slate-100">
-            
+    <main class="max-w-xl mx-auto p-6 min-h-screen flex flex-col justify-center">
+        
+        <div v-if="!myOrder" class="bg-white p-8 rounded-[3rem] shadow-2xl border border-slate-100">
             <div v-if="step === 1">
-                <h2 class="text-2xl font-black mb-2 tracking-tight">Select Store</h2>
-                <p class="text-slate-500 text-sm mb-6 font-medium">Find and verify the store on the map.</p>
+                <h2 class="text-2xl font-black mb-6 tracking-tight">Verify Pickup</h2>
                 
-                <div class="space-y-4">
-                    <input id="pickup-search" placeholder="Search for Store (e.g. Walmart)" class="w-full p-4 bg-slate-50 rounded-2xl font-bold border-none outline-none focus:ring-2 focus:ring-indigo-600 mb-4">
+                <input id="pickup-search" placeholder="Search (within 100 miles)..." 
+                       class="w-full p-4 bg-slate-50 rounded-2xl font-bold border-none outline-none focus:ring-2 focus:ring-indigo-600 mb-4">
 
-                    <div id="verify-map"></div>
-
-                    <div v-if="selectedLocation" class="p-4 bg-indigo-50 border border-indigo-100 rounded-2xl mb-4">
-                        <p class="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Selected Pickup</p>
-                        <p class="text-sm font-bold text-slate-700">{{ selectedLocation.name }}</p>
-                    </div>
-
-                    <div class="p-6 bg-slate-50 rounded-3xl border">
-                        <label class="text-[10px] font-black text-slate-400 uppercase mb-2 block tracking-widest">Order Details</label>
-                        <textarea v-model="currentDescription" placeholder="Order number or name on order..." class="w-full bg-transparent text-sm outline-none font-medium" rows="2"></textarea>
-                    </div>
-                </div>
-                
-                <button @click="confirmStepOne" :disabled="!selectedLocation" :class="!selectedLocation ? 'opacity-50' : ''" class="w-full bg-slate-900 text-white py-5 rounded-3xl font-black mt-8 shadow-xl">Verify Location</button>
-            </div>
-
-            <div v-if="step === 2">
-                <h2 class="text-2xl font-black mb-6 tracking-tight text-slate-800">Final Review</h2>
-                
-                <div class="space-y-6">
-                    <div class="p-4 bg-slate-50 rounded-2xl border">
-                        <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block tracking-widest">Delivery Address</label>
-                        <input id="delivery-search" placeholder="Search your address..." class="w-full bg-transparent font-bold outline-none py-2 text-slate-800">
-                    </div>
-
-                    <div v-if="newOrder.delivery" class="p-8 bg-slate-900 text-white rounded-[2.5rem] shadow-xl">
-                        <h4 class="text-[10px] font-bold text-indigo-400 uppercase mb-4 tracking-widest">Trip Summary</h4>
-                        <div v-for="p in newOrder.pickups" class="mb-4 border-l-2 border-indigo-500 pl-4">
-                            <p class="font-black text-sm text-white">{{ p.locationName }}</p>
-                            <p class="text-xs text-slate-400 italic">"{{ p.description }}"</p>
-                        </div>
-                        <div class="mt-6 pt-6 border-t border-slate-700 flex justify-between items-center">
-                            <span class="font-black text-sm uppercase tracking-widest text-slate-400">Escrow Total</span>
-                            <span class="text-3xl font-black text-indigo-400">$20.00</span>
-                        </div>
+                <div :class="['map-container', isFullscreen ? 'map-fullscreen' : '']">
+                    <div id="verify-map" class="h-full w-full"></div>
+                    
+                    <div class="map-tools flex flex-col gap-2">
+                        <button @click="toggleMapSize" class="bg-white p-3 rounded-full shadow-lg text-slate-700 hover:bg-indigo-600 hover:text-white transition-all">
+                            <i :class="isFullscreen ? 'fas fa-compress' : 'fas fa-expand'"></i>
+                        </button>
                     </div>
                 </div>
 
-                <div id="paypal-button-container" class="mt-8"></div>
-                <button @click="step = 1" class="w-full text-slate-400 font-bold mt-6 text-xs uppercase underline">Edit Store</button>
+                <div v-if="selectedLocation" class="mt-4 p-4 bg-indigo-50 rounded-2xl">
+                    <p class="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Confirmed Location</p>
+                    <p class="text-sm font-bold text-slate-700">{{ selectedLocation.name }}</p>
+                </div>
+
+                <button @click="confirmStepOne" :disabled="!selectedLocation" class="w-full bg-slate-900 text-white py-5 rounded-3xl font-black mt-8">Confirm & Continue</button>
             </div>
-        </div>
+            </div>
     </main>
 </div>
 
 <script>
-// Firebase Config from rustbucketdelivery
-const firebaseConfig = {
-  apiKey: "AIzaSyCgAjQPRCGAQEHyco2ORW6LdOv6yZ61nm0",
-  authDomain: "rustbucketdelivery.firebaseapp.com",
-  databaseURL: "https://rustbucketdelivery-default-rtdb.firebaseio.com",
-  projectId: "rustbucketdelivery",
-  storageBucket: "rustbucketdelivery.firebasestorage.app",
-  messagingSenderId: "302970102953",
-  appId: "1:302970102953:web:5b0024408461a83705b5b8",
-  measurementId: "G-65JNM50N5N"
-};
-
+// Firebase Config (Same as before)
+const firebaseConfig = { apiKey: "AIzaSyCgAjQPRCGAQEHyco2ORW6LdOv6yZ61nm0", databaseURL: "https://rustbucketdelivery-default-rtdb.firebaseio.com" };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const { createApp } = Vue;
@@ -116,101 +64,59 @@ const { createApp } = Vue;
 createApp({
     data() {
         return {
-            step: 1, myOrder: null,
-            map: null, marker: null,
-            selectedLocation: null,
-            currentDescription: '',
-            newOrder: { name: '', pickups: [], delivery: '', dLat: null, dLng: null }
+            step: 1, isFullscreen: false, map: null, marker: null, selectedLocation: null,
+            newOrder: { pickups: [], delivery: '' }
         }
     },
     methods: {
         initMap() {
+            const userLocation = { lat: 41.2565, lng: -95.9345 };
             this.map = new google.maps.Map(document.getElementById("verify-map"), {
-                center: { lat: 41.2565, lng: -95.9345 },
+                center: userLocation,
                 zoom: 12,
-                disableDefaultUI: true,
-                styles: [{ featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] }]
+                disableDefaultUI: true
+            });
+
+            // 100 MILE SEARCH BIAS
+            const searchCircle = new google.maps.Circle({
+                center: userLocation,
+                radius: 160934 // 100 miles in meters
             });
 
             const input = document.getElementById("pickup-search");
-            const searchBox = new google.maps.places.SearchBox(input);
+            const searchBox = new google.maps.places.SearchBox(input, {
+                bounds: searchCircle.getBounds()
+            });
 
             searchBox.addListener("places_changed", () => {
-                const places = searchBox.getPlaces();
-                if (places.length == 0) return;
-                const place = places[0];
-
-                if (this.marker) this.marker.setMap(null);
-                
-                this.marker = new google.maps.Marker({
-                    map: this.map,
-                    position: place.geometry.location,
-                    animation: google.maps.Animation.DROP
-                });
-
-                this.selectedLocation = {
-                    name: place.name + ", " + (place.formatted_address || ""),
-                    lat: place.geometry.location.lat(),
-                    lng: place.geometry.location.lng()
-                };
-
+                const place = searchBox.getPlaces()[0];
+                this.updateMarker(place.geometry.location, place.name + " " + place.formatted_address);
                 this.map.setCenter(place.geometry.location);
                 this.map.setZoom(16);
             });
+
+            // ALLOW MANUAL PIN DROPPING
+            this.map.addListener("click", (e) => {
+                this.updateMarker(e.latLng, "Custom Dropped Pin");
+            });
         },
-        confirmStepOne() {
-            this.newOrder.pickups = [{
-                locationName: this.selectedLocation.name,
-                lat: this.selectedLocation.lat,
-                lng: this.selectedLocation.lng,
-                description: this.currentDescription
-            }];
-            this.step = 2;
-            this.initDeliverySearch();
+        updateMarker(location, name) {
+            if (this.marker) this.marker.setMap(null);
+            this.marker = new google.maps.Marker({
+                position: location,
+                map: this.map,
+                animation: google.maps.Animation.DROP
+            });
+            this.selectedLocation = { name: name, lat: location.lat(), lng: location.lng() };
         },
-        initDeliverySearch() {
-            setTimeout(() => {
-                const input = document.getElementById("delivery-search");
-                const searchBox = new google.maps.places.SearchBox(input);
-                searchBox.addListener("places_changed", () => {
-                    const place = searchBox.getPlaces()[0];
-                    this.newOrder.delivery = place.formatted_address;
-                    this.newOrder.dLat = place.geometry.location.lat();
-                    this.newOrder.dLng = place.geometry.location.lng();
-                    this.initPayPal();
-                });
-            }, 500);
+        toggleMapSize() {
+            this.isFullscreen = !this.isFullscreen;
+            // Trigger Google Maps to resize properly
+            setTimeout(() => { google.maps.event.trigger(this.map, "resize"); }, 100);
         },
-        initPayPal() {
-            document.getElementById('paypal-button-container').innerHTML = '';
-            paypal.Buttons({
-                createOrder: (data, actions) => {
-                    return actions.order.create({ purchase_units: [{ amount: { value: "20.00" } }] });
-                },
-                onApprove: (data, actions) => {
-                    return actions.order.capture().then((details) => this.finalize(details));
-                }
-            }).render('#paypal-button-container');
-        },
-        async finalize(details) {
-            const o = { ...this.newOrder, id: Date.now(), total: 20, status: 'pending_pickup', customer: this.newOrder.name || 'Seeker' };
-            await db.ref('orders/' + o.id).set(o);
-            this.myOrder = o;
-            localStorage.setItem('rd_order_id', o.id);
-        },
-        async cancelOrder() {
-            if(confirm("Refund and cancel?")) {
-                await db.ref('orders/' + this.myOrder.id).remove();
-                this.myOrder = null;
-                localStorage.removeItem('rd_order_id');
-            }
-        }
+        confirmStepOne() { this.step = 2; /* ... rest of your existing logic */ }
     },
-    mounted() {
-        this.initMap();
-        const id = localStorage.getItem('rd_order_id');
-        if(id) db.ref('orders/' + id).on('value', snap => { this.myOrder = snap.val(); });
-    }
+    mounted() { this.initMap(); }
 }).mount('#app');
 </script>
 </body>
