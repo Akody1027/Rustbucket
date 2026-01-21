@@ -1,62 +1,58 @@
 :root {
-    --sidebar-width: 300px;
-    --primary: #1a1c20;
-    --accent: #3498db;
-    --bg-dark: #0f1114;
-    --card-bg: #1e2227;
+    --bg-neutral: #f8f9fa; /* Off-white background */
+    --surface: #ffffff;    /* Pure white for cards */
+    --text-main: #2d3436;  /* Soft charcoal text */
+    --text-muted: #636e72;
+    --accent: #0984e3;     /* Clean professional blue */
+    --border: #dfe6e9;     /* Subtle divider lines */
+    --shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
-body { display: flex; height: 100vh; overflow: hidden; background: var(--bg-dark); }
+body {
+    background-color: var(--bg-neutral);
+    color: var(--text-main);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0; padding: 0;
+    display: flex; flex-direction: column; height: 100vh;
+}
 
-/* Sidebar Navigation */
-.sidebar {
-    width: var(--sidebar-width);
-    background: var(--primary);
-    display: flex;
-    flex-direction: column;
-    border-right: 1px solid #333;
-    padding: 20px;
-    z-index: 100;
+/* Bottom Navigation for Mobile Feel */
+.bottom-nav {
+    position: fixed; bottom: 0; width: 100%;
+    background: var(--surface);
+    display: flex; justify-content: space-around;
+    padding: 12px 0; border-top: 1px solid var(--border);
+    z-index: 1000;
 }
 
 .nav-item {
-    padding: 15px;
-    margin-bottom: 10px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: 0.3s;
-    display: flex;
-    align-items: center;
-    gap: 12px;
+    text-align: center; font-size: 11px; color: var(--text-muted);
+    cursor: pointer; flex: 1;
 }
 
-.nav-item:hover, .nav-item.active { background: var(--accent); color: white; }
+.nav-item.active { color: var(--accent); font-weight: bold; }
 
-/* Main Content Area */
-.main-stage {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-}
-
-#map { flex-grow: 1; width: 100%; height: 100%; }
-
-/* Floating Content Panes (The Tabs) */
+/* Mobile Floating Card System */
 .tab-pane {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    width: 400px;
-    max-height: 85vh;
-    background: rgba(30, 34, 39, 0.95);
-    backdrop-filter: blur(10px);
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    overflow-y: auto;
-    z-index: 50;
-    border: 1px solid rgba(255,255,255,0.1);
+    position: absolute; bottom: 80px; left: 10px; right: 10px;
+    background: var(--surface);
+    border-radius: 20px; padding: 20px;
+    box-shadow: 0 -5px 25px rgba(0,0,0,0.08);
+    max-height: 70vh; overflow-y: auto;
 }
 
-.hidden { display: none; }
+.input-group {
+    background: #f1f2f6; border-radius: 12px;
+    padding: 12px; margin-bottom: 12px;
+}
+
+.input-group input, .input-group textarea {
+    background: transparent; border: none; width: 100%;
+    outline: none; color: var(--text-main); font-size: 16px;
+}
+
+.btn-main {
+    background: var(--accent); color: white;
+    width: 100%; padding: 16px; border-radius: 14px;
+    border: none; font-weight: 600; font-size: 16px;
+}
