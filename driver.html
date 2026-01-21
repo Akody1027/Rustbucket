@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RuralDrop | Driver Command</title>
+    <title>RuralDrop | Driver Portal</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDpSeGraT4Oee7tU5WjCfPr9Dskd0smdmU"></script>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -17,8 +16,7 @@
     
     <style>
         [v-cloak] { display: none; }
-        #map { height: 400px; width: 100%; z-index: 1; border-bottom: 4px solid #4f46e5; }
-        .tab-active { color: #4f46e5; border-bottom: 4px solid #4f46e5; }
+        #driver-map { height: 450px; width: 100%; border-bottom: 4px solid #4f46e5; }
     </style>
 </head>
 <body class="bg-slate-50 antialiased font-sans">
@@ -26,65 +24,42 @@
 <div id="app" v-cloak>
     <div v-if="!isAuthenticated" class="fixed inset-0 z-[100] bg-white flex items-center justify-center p-6 text-center">
         <div class="w-full max-w-md">
-            <div class="bg-slate-900 text-white w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <i class="fas fa-steering-wheel"></i>
-            </div>
-            <h2 class="text-3xl font-black mb-2 uppercase tracking-tighter">Driver Portal</h2>
-            <p class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-10">Enter 6-Digit PIN</p>
-            
-            <input v-model="pinInput" type="password" maxlength="6" 
-                   class="text-center text-4xl tracking-[0.4em] w-full border-b-4 border-slate-100 focus:border-indigo-600 outline-none pb-4 mb-10 font-black">
-            
-            <button @click="login" class="w-full bg-slate-900 text-white py-5 rounded-3xl font-black shadow-xl hover:bg-indigo-600 transition-all">
-                Unlock Dashboard
-            </button>
+            <h2 class="text-3xl font-black mb-10 uppercase tracking-tighter">Driver Dashboard</h2>
+            <input v-model="pinInput" type="password" maxlength="6" class="text-center text-4xl tracking-[0.4em] w-full border-b-4 border-slate-100 outline-none pb-4 mb-10 font-black">
+            <button @click="login" class="w-full bg-slate-900 text-white py-5 rounded-3xl font-black shadow-xl">Unlock Dashboard</button>
         </div>
     </div>
 
     <main v-else class="min-h-screen pb-24">
-        <div id="map"></div>
+        <div id="driver-map"></div>
 
-        <div class="bg-white flex border-b sticky top-0 z-40 shadow-sm">
-            <button @click="activeTab = 'current'" :class="activeTab === 'current' ? 'tab-active' : 'text-slate-400'" class="flex-1 py-4 text-[10px] font-black uppercase tracking-widest">Active Run</button>
-            <button @click="activeTab = 'settings'" :class="activeTab === 'settings' ? 'tab-active' : 'text-slate-400'" class="flex-1 py-4 text-[10px] font-black uppercase tracking-widest">Settings</button>
-        </div>
-
-        <div class="p-4 max-w-2xl mx-auto mt-4">
-            <div v-if="activeTab === 'current'" class="space-y-4">
-                <div v-for="(order, index) in orders" :key="order.id" class="p-6 bg-white rounded-3xl border border-slate-200 flex items-center gap-4 shadow-sm">
-                    <div class="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center font-black">
-                        {{ index + 1 }}
-                    </div>
-                    <div class="flex-1">
-                        <h4 class="font-black text-slate-800">{{ order.customer || 'New Seeker' }}</h4>
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                            ${{ order.total }}.00 • {{ order.pickups.length }} Stops
-                        </p>
-                    </div>
-                    <button @click="completeOrder(order.id)" class="bg-green-100 text-green-600 px-5 py-2.5 rounded-xl font-black text-[10px] uppercase">
-                        Delivered
-                    </button>
+        <div class="p-6 max-w-2xl mx-auto mt-4">
+            <h3 class="font-black text-[10px] uppercase text-slate-400 tracking-widest mb-6">Active Deliveries</h3>
+            <div v-for="(order, index) in orders" :key="order.id" class="p-6 bg-white rounded-3xl border border-slate-200 flex items-center gap-4 shadow-sm mb-4">
+                <div class="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center font-black">
+                    {{ index + 1 }}
                 </div>
-
-                <div v-if="orders.length === 0" class="text-center py-20 opacity-20">
-                    <i class="fas fa-route text-6xl mb-4"></i>
-                    <p class="font-black uppercase text-xs">Scanning for active paid orders...</p>
+                <div class="flex-1">
+                    <h4 class="font-black text-sm text-slate-800">{{ order.customer || 'New Seeker' }}</h4>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate">
+                        {{ order.pickups[0].locationName }}
+                    </p>
                 </div>
+                <button @click="completeOrder(order.id)" class="bg-green-100 text-green-600 px-5 py-2.5 rounded-xl font-black text-[10px] uppercase">
+                    Delivered
+                </button>
             </div>
-
-            <div v-if="activeTab === 'settings'" class="text-center space-y-6">
-                <div class="bg-white p-10 rounded-[3rem] border shadow-sm">
-                    <h3 class="font-black text-slate-800 uppercase tracking-widest mb-2">Driver Account</h3>
-                    <p class="text-xs text-slate-400 font-bold mb-8 uppercase">ID: RB-{{ pinInput }}</p>
-                    <button @click="logout" class="w-full bg-red-50 text-red-600 py-4 rounded-2xl font-black text-xs uppercase">Sign Out</button>
-                </div>
+            
+            <div v-if="orders.length === 0" class="text-center py-20 opacity-20">
+                <i class="fas fa-route text-6xl mb-4 text-slate-400"></i>
+                <p class="font-black uppercase text-xs">Waiting for paid runs...</p>
             </div>
         </div>
     </main>
 </div>
 
 <script>
-// Your specific Firebase Config
+// Firebase Config
 const firebaseConfig = {
   apiKey: "AIzaSyCgAjQPRCGAQEHyco2ORW6LdOv6yZ61nm0",
   authDomain: "rustbucketdelivery.firebaseapp.com",
@@ -103,11 +78,9 @@ const { createApp } = Vue;
 createApp({
     data() {
         return {
-            isAuthenticated: false,
-            pinInput: '',
-            activeTab: 'current',
-            map: null,
-            driverLoc: [41.25716, -95.99510], // Omaha default
+            isAuthenticated: false, pinInput: '',
+            map: null, markers: [],
+            driverLoc: { lat: 41.25, lng: -95.85 },
             orders: []
         }
     },
@@ -116,70 +89,78 @@ createApp({
             if(this.pinInput === '123456') {
                 this.isAuthenticated = true;
                 this.initMap();
-                this.listenForOrders();
-            } else { alert("Invalid Driver PIN"); }
+                this.listen();
+            } else { alert("Invalid PIN"); }
         },
         initMap() {
             setTimeout(() => {
-                if (this.map) this.map.remove();
-                this.map = L.map('map', { zoomControl: false }).setView(this.driverLoc, 13);
+                this.map = new google.maps.Map(document.getElementById("driver-map"), {
+                    center: this.driverLoc,
+                    zoom: 13,
+                    styles: [{ featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] }]
+                });
                 
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(this.map);
-                
-                // Get real location if available
+                // Get Live GPS
                 navigator.geolocation.getCurrentPosition(pos => {
-                    this.driverLoc = [pos.coords.latitude, pos.coords.longitude];
-                    this.map.setView(this.driverLoc, 13);
-                    this.drawRoutes();
+                    this.driverLoc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                    this.map.setCenter(this.driverLoc);
+                    this.draw();
                 });
             }, 300);
         },
-        listenForOrders() {
+        listen() {
             db.ref('orders').on('value', snap => {
                 const val = snap.val();
                 this.orders = val ? Object.values(val) : [];
-                this.drawRoutes();
+                this.draw();
             });
         },
-        drawRoutes() {
-            if (!this.map) return;
-            // Clear current map markers
-            this.map.eachLayer(l => { if (l instanceof L.Polyline || l instanceof L.Marker || l instanceof L.CircleMarker) this.map.removeLayer(l); });
-            
-            // Driver location icon
-            L.marker(this.driverLoc, {
-                icon: L.divIcon({className: 'bg-indigo-600 w-4 h-4 rounded-full border-2 border-white shadow-lg'})
-            }).addTo(this.map);
+        draw() {
+            if(!this.map) return;
+            // Clear current markers
+            this.markers.forEach(m => m.setMap(null));
+            this.markers = [];
 
-            let lastPoint = this.driverLoc;
+            // Driver Home
+            const driverMarker = new google.maps.Marker({
+                position: this.driverLoc,
+                map: this.map,
+                icon: { path: google.maps.SymbolPath.CIRCLE, scale: 7, fillColor: "#4f46e5", fillOpacity: 1, strokeWeight: 2, strokeColor: "white" }
+            });
+            this.markers.push(driverMarker);
 
-            this.orders.forEach(order => {
-                // 1. Pickups (Dotted Gray Line)
-                if(order.pickups) {
-                    order.pickups.forEach(p => {
-                        if(p.lat) {
-                            L.polyline([lastPoint, [p.lat, p.lng]], {color: '#94a3b8', weight: 2, dashArray: '5, 10'}).addTo(this.map);
-                            L.circleMarker([p.lat, p.lng], {radius: 4, color: '#334155'}).addTo(this.map).bindPopup("Pickup: " + p.location);
-                            lastPoint = [p.lat, p.lng];
-                        }
-                    });
-                }
-                // 2. Final Delivery (Solid Indigo Line)
-                if(order.dLat) {
-                    L.polyline([lastPoint, [order.dLat, order.dLng]], {color: '#4f46e5', weight: 5}).addTo(this.map);
-                    L.circleMarker([order.dLat, order.dLng], {radius: 8, color: '#4f46e5', fillOpacity: 1}).addTo(this.map).bindPopup("Delivery: " + order.customer);
-                    lastPoint = [order.dLat, order.dLng];
-                }
+            this.orders.forEach(o => {
+                const pickupPos = { lat: o.pickups[0].lat, lng: o.pickups[0].lng };
+                const deliverPos = { lat: o.dLat, lng: o.dLng };
+
+                // Pickup Marker
+                const pMarker = new google.maps.Marker({ position: pickupPos, map: this.map, title: "Pickup" });
+                this.markers.push(pMarker);
+
+                // Delivery Marker
+                const dMarker = new google.maps.Marker({ 
+                    position: deliverPos, 
+                    map: this.map, 
+                    title: "Delivery",
+                    label: { text: "D", color: "white", fontWeight: "bold" }
+                });
+                this.markers.push(dMarker);
+
+                // Route Line (Pickup -> Delivery)
+                const path = new google.maps.Polyline({
+                    path: [pickupPos, deliverPos],
+                    geodesic: true,
+                    strokeColor: "#4f46e5",
+                    strokeOpacity: 1.0,
+                    strokeWeight: 4
+                });
+                path.setMap(this.map);
             });
         },
         async completeOrder(id) {
             if(confirm("Mark as Delivered?")) {
                 await db.ref('orders/' + id).remove();
             }
-        },
-        logout() {
-            this.isAuthenticated = false;
-            this.pinInput = '';
         }
     }
 }).mount('#app');
