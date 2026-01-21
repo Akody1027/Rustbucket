@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RuralDrop | Verify & Order</title>
+    <title>RuralDrop | Customer Portal</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_KEY&libraries=places"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDpSeGraT4Oee7tU5WjCfPr9Dskd0smdmU&libraries=places"></script>
     
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -17,8 +17,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         [v-cloak] { display: none; }
-        #verify-map { height: 250px; width: 100%; border-radius: 1.5rem; margin-bottom: 1rem; border: 2px solid #e2e8f0; }
-        .step-card { transition: all 0.3s ease; }
+        #verify-map { height: 280px; width: 100%; border-radius: 2rem; margin-bottom: 1.5rem; border: 2px solid #e2e8f0; }
     </style>
 </head>
 <body class="bg-slate-50 antialiased font-sans">
@@ -37,80 +36,68 @@
                 <div class="w-16 h-16 bg-green-100 text-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
                     <i class="fas fa-shield-check"></i>
                 </div>
-                <h2 class="text-2xl font-black">Order Verified</h2>
+                <h2 class="text-2xl font-black">Trip Verified</h2>
                 <p class="text-sm font-bold text-indigo-600 mt-1 uppercase tracking-widest">Status: {{ myOrder.status }}</p>
             </div>
-            <button @click="cancelOrder" class="w-full bg-red-50 text-red-600 py-4 rounded-2xl font-black text-xs uppercase">Cancel & Refund</button>
+            <button @click="cancelOrder" class="w-full bg-red-50 text-red-600 py-4 rounded-2xl font-black text-xs uppercase">Refund & Cancel</button>
         </div>
 
-        <div v-else class="bg-white p-8 rounded-[3rem] shadow-2xl border border-slate-100 step-card">
+        <div v-else class="bg-white p-10 rounded-[3rem] shadow-2xl border border-slate-100">
             
             <div v-if="step === 1">
-                <h2 class="text-2xl font-black mb-2 tracking-tight">Select Pickup</h2>
-                <p class="text-slate-500 text-sm mb-6">Search and verify the location on the map.</p>
+                <h2 class="text-2xl font-black mb-2 tracking-tight">Select Store</h2>
+                <p class="text-slate-500 text-sm mb-6 font-medium">Find and verify the store on the map.</p>
                 
                 <div class="space-y-4">
-                    <div class="relative">
-                        <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Search Location</label>
-                        <input id="pickup-search" placeholder="Enter store name or address..." class="w-full p-4 bg-slate-50 rounded-2xl font-bold border-none outline-none focus:ring-2 focus:ring-indigo-600 mb-4">
-                    </div>
+                    <input id="pickup-search" placeholder="Search for Store (e.g. Walmart)" class="w-full p-4 bg-slate-50 rounded-2xl font-bold border-none outline-none focus:ring-2 focus:ring-indigo-600 mb-4">
 
                     <div id="verify-map"></div>
 
                     <div v-if="selectedLocation" class="p-4 bg-indigo-50 border border-indigo-100 rounded-2xl mb-4">
-                        <p class="text-[10px] font-black text-indigo-400 uppercase">Selected</p>
+                        <p class="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Selected Pickup</p>
                         <p class="text-sm font-bold text-slate-700">{{ selectedLocation.name }}</p>
                     </div>
 
                     <div class="p-6 bg-slate-50 rounded-3xl border">
-                        <label class="text-[10px] font-black text-slate-400 uppercase mb-2 block">Order Type</label>
-                        <div class="flex items-center gap-3 p-3 bg-white rounded-xl border-2 border-indigo-600">
-                            <i class="fas fa-shopping-bag text-indigo-600"></i>
-                            <span class="font-bold text-sm text-slate-800">Order Pickup</span>
-                        </div>
-                        
-                        <label class="text-[10px] font-black text-slate-400 uppercase mt-4 mb-2 block">Order Details (Name/Number)</label>
-                        <textarea v-model="currentDescription" placeholder="Ex: Order #12345 for John Smith..." class="w-full bg-transparent text-sm outline-none" rows="2"></textarea>
+                        <label class="text-[10px] font-black text-slate-400 uppercase mb-2 block tracking-widest">Order Details</label>
+                        <textarea v-model="currentDescription" placeholder="Order number or name on order..." class="w-full bg-transparent text-sm outline-none font-medium" rows="2"></textarea>
                     </div>
                 </div>
                 
-                <button @click="confirmStepOne" :disabled="!selectedLocation" :class="!selectedLocation ? 'opacity-50' : ''" class="w-full bg-slate-900 text-white py-5 rounded-3xl font-black mt-8 shadow-xl">Confirm Pickup Location</button>
+                <button @click="confirmStepOne" :disabled="!selectedLocation" :class="!selectedLocation ? 'opacity-50' : ''" class="w-full bg-slate-900 text-white py-5 rounded-3xl font-black mt-8 shadow-xl">Verify Location</button>
             </div>
 
             <div v-if="step === 2">
-                <h2 class="text-2xl font-black mb-6 tracking-tight">Delivery Details</h2>
+                <h2 class="text-2xl font-black mb-6 tracking-tight text-slate-800">Final Review</h2>
                 
                 <div class="space-y-6">
                     <div class="p-4 bg-slate-50 rounded-2xl border">
-                        <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Enter Home Address</label>
-                        <input id="delivery-search" placeholder="Search your address..." class="w-full bg-transparent font-bold outline-none py-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block tracking-widest">Delivery Address</label>
+                        <input id="delivery-search" placeholder="Search your address..." class="w-full bg-transparent font-bold outline-none py-2 text-slate-800">
                     </div>
 
-                    <div v-if="newOrder.delivery" class="p-8 bg-slate-900 text-white rounded-[2rem] shadow-xl">
-                        <h4 class="text-[10px] font-bold text-indigo-400 uppercase mb-4 tracking-widest">Run Summary</h4>
-                        <div v-for="p in newOrder.pickups" class="mb-4">
+                    <div v-if="newOrder.delivery" class="p-8 bg-slate-900 text-white rounded-[2.5rem] shadow-xl">
+                        <h4 class="text-[10px] font-bold text-indigo-400 uppercase mb-4 tracking-widest">Trip Summary</h4>
+                        <div v-for="p in newOrder.pickups" class="mb-4 border-l-2 border-indigo-500 pl-4">
                             <p class="font-black text-sm text-white">{{ p.locationName }}</p>
                             <p class="text-xs text-slate-400 italic">"{{ p.description }}"</p>
                         </div>
                         <div class="mt-6 pt-6 border-t border-slate-700 flex justify-between items-center">
-                            <span class="font-black">Escrow Total</span>
-                            <span class="text-2xl font-black text-indigo-400">$20.00</span>
+                            <span class="font-black text-sm uppercase tracking-widest text-slate-400">Escrow Total</span>
+                            <span class="text-3xl font-black text-indigo-400">$20.00</span>
                         </div>
-                        <p class="text-[9px] text-slate-500 mt-4 leading-relaxed">
-                            <i class="fas fa-shield-alt mr-1"></i> Funds are held securely and released only after you confirm the driver has arrived.
-                        </p>
                     </div>
                 </div>
 
                 <div id="paypal-button-container" class="mt-8"></div>
-                
-                <button @click="step = 1" class="w-full text-slate-400 font-bold mt-6 text-xs uppercase underline">Back to Search</button>
+                <button @click="step = 1" class="w-full text-slate-400 font-bold mt-6 text-xs uppercase underline">Edit Store</button>
             </div>
         </div>
     </main>
 </div>
 
 <script>
+// Firebase Config from rustbucketdelivery
 const firebaseConfig = {
   apiKey: "AIzaSyCgAjQPRCGAQEHyco2ORW6LdOv6yZ61nm0",
   authDomain: "rustbucketdelivery.firebaseapp.com",
@@ -151,17 +138,14 @@ createApp({
             searchBox.addListener("places_changed", () => {
                 const places = searchBox.getPlaces();
                 if (places.length == 0) return;
-
                 const place = places[0];
-                if (!place.geometry || !place.geometry.location) return;
 
                 if (this.marker) this.marker.setMap(null);
                 
                 this.marker = new google.maps.Marker({
                     map: this.map,
-                    title: place.name,
                     position: place.geometry.location,
-                    icon: { url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" }
+                    animation: google.maps.Animation.DROP
                 });
 
                 this.selectedLocation = {
@@ -209,13 +193,13 @@ createApp({
             }).render('#paypal-button-container');
         },
         async finalize(details) {
-            const o = { ...this.newOrder, id: Date.now(), total: 20, status: 'pending_pickup' };
+            const o = { ...this.newOrder, id: Date.now(), total: 20, status: 'pending_pickup', customer: this.newOrder.name || 'Seeker' };
             await db.ref('orders/' + o.id).set(o);
             this.myOrder = o;
             localStorage.setItem('rd_order_id', o.id);
         },
         async cancelOrder() {
-            if(confirm("Cancel and refund?")) {
+            if(confirm("Refund and cancel?")) {
                 await db.ref('orders/' + this.myOrder.id).remove();
                 this.myOrder = null;
                 localStorage.removeItem('rd_order_id');
