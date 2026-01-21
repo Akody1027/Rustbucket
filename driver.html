@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RuralDrop | Driver Command</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        [v-cloak] { display: none; }
+        #map { height: 350px; width: 100%; z-index: 10; border-bottom: 4px solid #4f46e5; }
+        .tab-active { color: #4f46e5; border-bottom: 4px solid #4f46e5; }
+        .login-overlay { backdrop-filter: blur(15px); background: rgba(255,255,255,0.9); }
+    </style>
+</head>
+<body class="bg-slate-100 antialiased font-sans">
+
+<div id="app" v-cloak>
+    <div v-if="!isAuthenticated" class="fixed inset-0 z-[100] login-overlay flex items-center justify-center p-6">
+        <div class="bg-white p-10 rounded-[3rem] shadow-2xl w-full max-w-md text-center border">
+            <div class="bg-slate-900 text-white w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <i class="fas fa-key"></i>
+            </div>
+            <h2 class="text-2xl font-black mb-2">Driver Access</h2>
+            <p class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-8">Enter 6-Digit PIN</p>
+            <input v-model="pinInput" type="password" maxlength="6" class="text-center text-4xl tracking-[0.5em] w-full border-b-4 border-slate-100 outline-none pb-4 mb-10 font-black focus:border-indigo-600">
+            <button @click="attemptLogin" class="w-full bg-indigo-600 text-white py-5 rounded-3xl font-black shadow-xl shadow-indigo-100 transition-all hover:bg-indigo-700">Unlock Dashboard</button>
+        </div>
+    </div>
+
+    <div v-else>
+        <nav class="bg-white px-6 py-4 flex justify-between items-center border-b sticky top-0 z-50">
+            <div class="flex items-center gap-2">
+                <div class="bg-indigo-600 text-white p-1.5 rounded-lg"><i class="fas fa-truck-fast"></i></div>
+                <h1 class="text-xl font-black text-slate-800 tracking-tighter uppercase">Rural<span class="text-indigo-600">Drop</span></h1>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="text-[10px] font-black px-3 py-1 bg-green-100 text-green-700 rounded-full uppercase">Online</span>
+                <button @click="logout" class="text-slate-400"><i class="fas fa-power-off"></i></button>
+            </div>
+        </nav>
+
+        <main class="max-w-4xl mx-auto pb-24">
+            <div v-if="activeTab === 'current'">
+                <div id="map"></div>
+                <div class="bg-slate-900 text-white p-6 flex justify-between items-center">
+                    <div>
+                        <p class="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Run Value</p>
+                        <p class="text-3xl font-black">${{ currentRunTotal }}.00</p>
+                    </div>
+                    <button v-if="tripStatus === 'idle'" @click="startTrip" class="bg-indigo-500 px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest">Start Trip</button>
+                    <span v-else class="text-green-400 font-black text-xs uppercase animate-pulse">Live Route</span>
+                </div>
+            </div>
+
+            <div class="bg-white flex border-b sticky top-[69px] z-40">
+                <button @click="activeTab = 'current'; refreshMap()" :class="activeTab === 'current' ? 'tab-active' : 'text-slate-400'" class="flex-1 py-4 text-[10px] font-black uppercase tracking-widest">Current Run</button>
+                <button @click="activeTab = 'future'" :class="activeTab === 'future' ? 'tab-active' : 'text-slate-400'" class="flex-1 py-4 text-[10px] font-black uppercase tracking-widest">Future Run</button>
+                <button @click="activeTab = 'settings'" :class="activeTab === 'settings' ? 'tab-active' : 'text-slate-400'" class="flex-1 py-4 text-[10px] font-black uppercase tracking-widest">Settings</button>
+            </div>
+
+            <div class="p-4 mt-2">
+                <div v-if="activeTab === 'current'" class="space-y-3">
+                    <div v-for="(order, index) in currentRun" :key="order.id" :class="order.type === 'emergency' ? 'border-amber-500 bg-amber-50' : 'bg-white'" class="p-5 rounded-3xl border border-slate-200 flex items-center gap-4 shadow-sm">
+                        <div :class="order.type === 'emergency' ? 'bg-amber-500' : 'bg-slate-900'" class="w-10 h-10 rounded-xl flex items-center justify-center text-white font-black">
+                            {{ index + 1 }}
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-black text-sm">{{ order.customer }}</h4>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase">{{ order.pickups.length }} Store Stops • Loaded</p>
+                        </div>
+                        <button @click="completeDelivery(order.id)" class="bg-green-100 text-green-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase">Delivered</button>
+                    </div>
+                </div>
+
+                <div v-if="activeTab === 'future'" class="space-y-3">
+                    <div v-for="order in futureRun" :key="order.id" class="p-5 bg-white rounded-3xl border flex justify-between items-center shadow-sm">
+                        <div>
+                            <h4 class="font-black text-sm">{{ order.customer }}</h4>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase">Wait Mode • $20.00</p>
+                        </div>
+                        <button @click="moveToCurrent(order.id)" class="text-[10px] font-black text-indigo-600 bg-indigo-50 px-4 py-2 rounded-xl">Add to Run</button>
+                    </div>
+                </div>
+
+                <div v-if="activeTab === 'settings'" class="space-y-6">
+                    <div class="bg-white p-8 rounded-[2rem] border shadow-sm">
+                        <h3 class="font-black text-xs uppercase text-slate-400 mb-6">Manage Driver PINs</h3>
+                        <div class="flex gap-2">
+                            <input v-model="newPin" placeholder="Add 6-digit PIN" class="flex-1 bg-slate-50 p-4 rounded-xl font-bold outline-none border">
+                            <button @click="addPin" class="bg-slate-900 text-white px-6 rounded-xl font-black text-xs">ADD</button>
+                        </div>
+                        <div class="mt-4 space-y-2">
+                            <div v-for="p in allowedPins" class="flex justify-between p-3 bg-slate-50 rounded-lg text-sm font-bold">
+                                <span>PIN: {{ p }}</span>
+                                <button @click="removePin(p)" class="text-red-400"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+// --- CONFIGURATION ---
+const firebaseConfig = { apiKey: "YOUR_KEY", databaseURL: "YOUR_URL", projectId: "YOUR_PROJECT" };
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const { createApp } = Vue;
+
+createApp({
+    data() {
+        return {
+            isAuthenticated: false, pinInput: '', newPin: '', activeTab: 'current', tripStatus: 'idle',
+            allowedPins: ['123456'], map: null, driverLoc: [41.25, -95.85],
+            currentRun: [], futureRun: []
+        }
+    },
+    computed: {
+        currentRunTotal() { return this.currentRun.reduce((s, o) => s + o.total, 0); }
+    },
+    methods: {
+        attemptLogin() {
+            if (this.allowedPins.includes(this.pinInput)) {
+                this.isAuthenticated = true;
+                this.getGPSAndInitMap();
+            } else { alert("Access Denied"); }
+        },
+        getGPSAndInitMap() {
+            navigator.geolocation.getCurrentPosition(pos => {
+                this.driverLoc = [pos.coords.latitude, pos.coords.longitude];
+                this.initMap();
+            }, () => this.initMap());
+        },
+        initMap() {
+            setTimeout(() => {
+                if (this.map) this.map.remove();
+                this.map = L.map('map').setView(this.driverLoc, 12);
+                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}').addTo(this.map);
+                this.listenForOrders();
+            }, 500);
+        },
+        listenForOrders() {
+            db.ref('orders').on('value', snap => {
+                const val = snap.val();
+                const all = val ? Object.values(val) : [];
+                this.currentRun = all.filter(o => o.type === 'emergency' || o.status === 'dispatched');
+                this.futureRun = all.filter(o => o.type === 'batch' && o.status === 'pending');
+                this.drawRoutes();
+            });
+        },
+        drawRoutes() {
+            if (!this.map) return;
+            this.map.eachLayer(l => { if (l instanceof L.Polyline || l instanceof L.Marker || l instanceof L.CircleMarker) this.map.removeLayer(l); });
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}').addTo(this.map);
+            
+            L.marker(this.driverLoc, {icon: L.divIcon({className: 'bg-indigo-600 w-4 h-4 rounded-full border-2 border-white shadow-lg'})}).addTo(this.map);
+
+            let last = this.driverLoc;
+            this.currentRun.forEach(o => {
+                const color = o.type === 'emergency' ? '#f59e0b' : '#4f46e5';
+                // Pickup: Deadhead (Dotted)
+                o.pickups.forEach(p => {
+                    if (p.lat) {
+                        L.polyline([last, [p.lat, p.lng]], {color: '#94a3b8', weight: 2, dashArray: '5, 10'}).addTo(this.map);
+                        L.circleMarker([p.lat, p.lng], {radius: 4, color: '#334155'}).addTo(this.map).bindPopup("Pickup: " + p.location);
+                        last = [p.lat, p.lng];
+                    }
+                });
+                // Delivery: Loaded (Solid)
+                if (o.dLat) {
+                    L.polyline([last, [o.dLat, o.dLng]], {color: color, weight: 5}).addTo(this.map);
+                    L.circleMarker([o.dLat, o.dLng], {radius: 8, color: color, fillOpacity: 1}).addTo(this.map).bindPopup(o.customer);
+                    last = [o.dLat, o.dLng];
+                }
+            });
+        },
+        async deliver(id) { await db.ref('orders/' + id).remove(); },
+        async startTrip() {
+            this.tripStatus = 'started';
+            this.currentRun.forEach(o => db.ref('orders/' + o.id).update({status: 'dispatched'}));
+        },
+        async moveToCurrent(id) { await db.ref('orders/' + id).update({status: 'dispatched'}); },
+        addPin() { if(this.newPin.length === 6) { this.allowedPins.push(this.newPin); this.newPin = ''; } },
+        removePin(p) { this.allowedPins = this.allowedPins.filter(x => x !== p); },
+        refreshMap() { this.initMap(); },
+        logout() { this.isAuthenticated = false; this.pinInput = ''; }
+    }
+}).mount('#app');
+</script>
+</body>
+</html>
