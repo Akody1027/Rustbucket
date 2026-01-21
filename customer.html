@@ -3,151 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RuralDrop | Select & Verify</title>
+    <title>RuralDrop | Fast Checkout</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDpSeGraT4Oee7tU5WjCfPr9Dskd0smdmU&libraries=places"></script>
-    
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    <script src="https://www.paypal.com/sdk/js?client-id=AZ1st2QfbDjcDTmMwT27gZM2CtVRujmmQoLGSQuoC5HeBUgp1cWOk9NnFtelXrPW5viW2EXpEK3gqHDf&currency=USD"></script>
+    
+    <script src="https://www.paypal.com/sdk/js?client-id=AZ1st2QfbDjcDTmMwT27gZM2CtVRujmmQoLGSQuoC5HeBUgp1cWOk9NnFtelXrPW5viW2EXpEK3gqHDf&components=card-fields&currency=USD"></script>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         [v-cloak] { display: none; }
-        .map-container { position: relative; width: 100%; height: 400px; border-radius: 2rem; overflow: hidden; border: 2px solid #e2e8f0; }
-        .map-fullscreen { position: fixed; top: 0; left: 0; height: 100vh !important; width: 100vw !important; z-index: 1000; border-radius: 0; }
+        /* Ultra-compact input styling */
+        .card-field { height: 50px; padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; transition: border-color 0.2s; }
+        .card-field.focused { border-color: #4f46e5; }
     </style>
 </head>
-<body class="bg-slate-50 antialiased font-sans">
+<body class="bg-slate-50 font-sans">
 
 <div id="app" v-cloak>
     <main class="max-w-xl mx-auto p-6 min-h-screen flex flex-col justify-center">
         
-        <div v-if="!myOrder" class="bg-white p-8 rounded-[3rem] shadow-2xl border border-slate-100">
-            <div v-if="step === 1">
-                <h2 class="text-2xl font-black mb-2 tracking-tight">Find your Store</h2>
-                <p class="text-slate-500 text-sm mb-6">Search, click a pin on the map, and select your pickup.</p>
+        <div v-if="step === 2" class="bg-white p-8 rounded-[2.5rem] shadow-2xl border border-slate-100">
+            <h2 class="text-xl font-black mb-6 tracking-tight">Payment Details</h2>
+
+            <div id="card-form" class="space-y-3">
+                <div id="card-name-field-container">
+                    <input id="card-holder-name" placeholder="Full Name on Card" class="w-full card-field outline-none font-bold">
+                </div>
                 
-                <div class="flex gap-2 mb-4">
-                    <input id="pickup-search" placeholder="Search (e.g. Walmart)..." 
-                           class="flex-1 p-4 bg-slate-50 rounded-2xl font-bold border-none outline-none focus:ring-2 focus:ring-indigo-600">
-                    <button @click="executeSearch" class="bg-indigo-600 text-white px-6 rounded-2xl font-black">
-                        <i class="fas fa-search"></i>
-                    </button>
+                <div id="card-number-field-container" class="card-field"></div>
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <div id="card-expiry-field-container" class="card-field"></div>
+                    <div id="card-cvv-field-container" class="card-field"></div>
                 </div>
 
-                <div :class="['map-container', isFullscreen ? 'map-fullscreen' : '']">
-                    <div id="verify-map" class="h-full w-full"></div>
-                    <button @click="toggleMapSize" class="absolute bottom-4 right-4 bg-white p-3 rounded-full shadow-lg z-[1001]">
-                        <i :class="isFullscreen ? 'fas fa-compress' : 'fas fa-expand'"></i>
-                    </button>
-                </div>
-
-                <div v-if="selectedLocation" class="mt-4 p-4 bg-green-50 border border-green-100 rounded-2xl">
-                    <p class="text-[10px] font-black text-green-600 uppercase tracking-widest">Selected Pickup</p>
-                    <p class="text-sm font-bold text-slate-700">{{ selectedLocation.name }}</p>
-                </div>
-
-                <button @click="confirmStepOne" :disabled="!selectedLocation" :class="!selectedLocation ? 'opacity-50' : ''" class="w-full bg-slate-900 text-white py-5 rounded-3xl font-black mt-8 shadow-xl">Next: Delivery Details</button>
+                <button id="multi-card-field-button" @click="handleCardPayment" class="w-full bg-slate-900 text-white py-5 rounded-2xl font-black mt-4 shadow-xl">
+                    Confirm ${{ finalTotal }}.00 Securely
+                </button>
             </div>
+
+            <div class="mt-6 flex items-center justify-center gap-2 opacity-40">
+                <i class="fab fa-cc-visa text-xl"></i>
+                <i class="fab fa-cc-mastercard text-xl"></i>
+                <i class="fab fa-cc-amex text-xl"></i>
+                <span class="text-[10px] font-black uppercase">Secure Encryption</span>
             </div>
+        </div>
     </main>
 </div>
 
 <script>
-const firebaseConfig = { apiKey: "AIzaSyCgAjQPRCGAQEHyco2ORW6LdOv6yZ61nm0", databaseURL: "https://rustbucketdelivery-default-rtdb.firebaseio.com" };
+// Firebase Config
+const firebaseConfig = { 
+    apiKey: "AIzaSyCgAjQPRCGAQEHyco2ORW6LdOv6yZ61nm0", 
+    databaseURL: "https://rustbucketdelivery-default-rtdb.firebaseio.com" 
+};
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-const { createApp } = Vue;
 
+const { createApp } = Vue;
 createApp({
     data() {
-        return {
-            step: 1, isFullscreen: false, map: null, markers: [], selectedLocation: null,
-            infoWindow: null, myOrder: null,
-            newOrder: { pickups: [], delivery: '' }
-        }
+        return { step: 2, finalTotal: 20, cardFields: null };
     },
     methods: {
-        initMap() {
-            const centerPoint = { lat: 41.2565, lng: -95.9345 };
-            this.map = new google.maps.Map(document.getElementById("verify-map"), {
-                center: centerPoint,
-                zoom: 11,
-                disableDefaultUI: true
-            });
-            this.infoWindow = new google.maps.InfoWindow();
-        },
-        executeSearch() {
-            const query = document.getElementById('pickup-search').value;
-            if (!query) return;
-
-            const request = {
-                query: query,
-                location: this.map.getCenter(),
-                radius: 160934, // 100 Miles
-                fields: ["name", "geometry", "formatted_address"],
-            };
-
-            const service = new google.maps.places.PlacesService(this.map);
-            service.textSearch(request, (results, status) => {
-                if (status === google.maps.places.PlacesServiceStatus.OK && results) {
-                    this.clearMarkers();
-                    const bounds = new google.maps.LatLngBounds();
-                    
-                    results.forEach(place => {
-                        this.createMarker(place);
-                        bounds.extend(place.geometry.location);
-                    });
-                    this.map.fitBounds(bounds);
-                }
-            });
-        },
-        createMarker(place) {
-            const marker = new google.maps.Marker({
-                map: this.map,
-                position: place.geometry.location,
-                title: place.name
-            });
-
-            marker.addListener("click", () => {
-                const contentString = `
-                    <div class="p-2">
-                        <h3 class="font-black text-sm mb-1">${place.name}</h3>
-                        <p class="text-xs text-slate-500 mb-3">${place.formatted_address}</p>
-                        <button id="select-btn" class="bg-indigo-600 text-white text-[10px] px-3 py-1.5 rounded-lg font-black uppercase">Select this Location</button>
-                    </div>
-                `;
-                this.infoWindow.setContent(contentString);
-                this.infoWindow.open(this.map, marker);
-
-                // Wait for InfoWindow to DOM-load to attach button listener
-                google.maps.event.addListenerOnce(this.infoWindow, 'domready', () => {
-                    document.getElementById('select-btn').addEventListener('click', () => {
-                        this.selectedLocation = {
-                            name: place.name + ", " + place.formatted_address,
-                            lat: place.geometry.location.lat(),
-                            lng: place.geometry.location.lng()
-                        };
-                        this.infoWindow.close();
-                    });
+        initCardFields() {
+            // Check if advanced fields are supported
+            if (paypal.CardFields) {
+                this.cardFields = paypal.CardFields({
+                    createOrder: (data, actions) => {
+                        return fetch("/api/orders", { method: "post" }) // Or use your logic
+                        .then(res => res.json())
+                        .then(orderData => orderData.id);
+                    },
+                    onApprove: (data, actions) => {
+                        this.finalizeOrder();
+                    }
                 });
-            });
-            this.markers.push(marker);
+
+                // Render compact fields
+                if (this.cardFields.isEligible()) {
+                    this.cardFields.NumberField().render("#card-number-field-container");
+                    this.cardFields.ExpiryField().render("#card-expiry-field-container");
+                    this.cardFields.CVVField().render("#card-cvv-field-container");
+                }
+            }
         },
-        clearMarkers() {
-            this.markers.forEach(m => m.setMap(null));
-            this.markers = [];
+        handleCardPayment() {
+            const name = document.getElementById('card-holder-name').value;
+            this.cardFields.submit({ cardholderName: name });
         },
-        toggleMapSize() {
-            this.isFullscreen = !this.isFullscreen;
-            setTimeout(() => { google.maps.event.trigger(this.map, "resize"); }, 200);
-        },
-        confirmStepOne() { this.step = 2; /* Existing delivery search initialization */ }
+        async finalizeOrder() {
+            // Your logic to push to rustbucketdelivery
+            alert("Payment Authorized!");
+        }
     },
-    mounted() { this.initMap(); }
+    mounted() {
+        this.initCardFields();
+    }
 }).mount('#app');
 </script>
 </body>
