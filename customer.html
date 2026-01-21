@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RuralDrop | Secure Checkout</title>
+    <title>RuralDrop | Secure Customer</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDpSeGraT4Oee7tU5WjCfPr9Dskd0smdmU&libraries=places"></script>
-    
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     
     <script src="https://www.paypal.com/sdk/js?client-id=AZ1st2QfbDjcDTmMwT27gZM2CtVRujmmQoLGSQuoC5HeBUgp1cWOk9NnFtelXrPW5viW2EXpEK3gqHDf&components=card-fields&currency=USD"></script>
@@ -17,173 +17,162 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         [v-cloak] { display: none; }
-        #verify-map { height: 350px; width: 100%; border-radius: 2rem; border: 2px solid #e2e8f0; }
-        .card-field { height: 50px; padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; transition: border-color 0.2s; }
-        iframe { width: 100% !important; } /* Ensures PayPal frames fill container */
+        .nav-active { color: #ffffff !important; transform: translateY(-4px); }
+        #verify-map { height: 300px; width: 100%; border-radius: 2rem; }
+        .card-field { height: 50px; padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; }
     </style>
 </head>
-<body class="bg-slate-50 font-sans">
+<body class="bg-slate-50 font-sans pb-24">
 
 <div id="app" v-cloak>
-    <nav class="bg-white px-6 py-4 flex justify-between items-center border-b sticky top-0 z-50">
-        <div class="flex items-center gap-2">
-            <div class="bg-indigo-600 text-white p-2 rounded-xl"><i class="fas fa-truck-fast"></i></div>
-            <h1 class="text-xl font-black text-slate-800 tracking-tighter uppercase">Rural<span class="text-indigo-600">Drop</span></h1>
-        </div>
-    </nav>
-
-    <main class="max-w-xl mx-auto p-6 min-h-[80vh] flex flex-col justify-center">
-        <div v-if="myOrder" class="bg-white p-10 rounded-[3rem] shadow-2xl border border-slate-100 text-center">
-            <div class="w-16 h-16 bg-green-100 text-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <i class="fas fa-shield-check text-2xl"></i>
+    <div v-if="!user" class="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-indigo-50 to-white">
+        <div class="bg-white p-10 rounded-[3rem] shadow-2xl w-full max-w-md border border-slate-100">
+            <div class="bg-indigo-600 text-white w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-8">
+                <i class="fas fa-truck-fast text-2xl"></i>
             </div>
-            <h2 class="text-2xl font-black">Escrow Active</h2>
-            <p class="text-sm text-slate-500 mt-2">Status: <span class="text-indigo-600 font-bold uppercase">{{ myOrder.status }}</span></p>
-            <button @click="cancelOrder" class="w-full bg-red-50 text-red-600 py-4 rounded-2xl font-black text-xs uppercase mt-8">Cancel & Refund</button>
-        </div>
-
-        <div v-else class="bg-white p-8 rounded-[3rem] shadow-2xl border border-slate-100">
+            <h2 class="text-3xl font-black mb-2 text-center tracking-tighter">Welcome Back</h2>
+            <p class="text-slate-400 text-center mb-10 font-medium">Log in to manage your drops.</p>
             
-            <div v-if="step === 1">
-                <h2 class="text-2xl font-black mb-2 tracking-tight">Select Pickup</h2>
-                <p class="text-slate-500 text-sm mb-6">Search, then click a pin on the map to select.</p>
-                
-                <div class="flex gap-2 mb-4">
-                    <input id="pickup-search" placeholder="Search (e.g. Walmart)..." class="flex-1 p-4 bg-slate-50 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-indigo-600">
-                    <button @click="executeSearch" class="bg-indigo-600 text-white px-6 rounded-2xl font-black"><i class="fas fa-search"></i></button>
+            <div class="space-y-4">
+                <input v-model="auth.email" type="email" placeholder="Email Address" class="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-indigo-600">
+                <input v-model="auth.password" type="password" placeholder="Password" class="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none focus:ring-2 focus:ring-indigo-600">
+                <button @click="handleLogin" class="w-full bg-slate-900 text-white py-5 rounded-3xl font-black shadow-xl mt-4">Sign In</button>
+            </div>
+            <p class="text-center mt-6 text-xs text-slate-400 font-bold uppercase tracking-widest cursor-pointer" @click="handleSignUp">Create Account</p>
+        </div>
+    </div>
+
+    <div v-else>
+        <nav class="bg-white px-6 py-4 flex justify-between items-center border-b sticky top-0 z-50">
+            <h1 class="text-xl font-black text-slate-800 uppercase tracking-tighter">Rural<span class="text-indigo-600">Drop</span></h1>
+            <div class="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center text-[10px] font-black uppercase">{{ user.email[0] }}</div>
+        </nav>
+
+        <main class="max-w-xl mx-auto p-6">
+            <div v-if="activeTab === 'home'">
+                <div v-if="myOrder" class="bg-white p-8 rounded-[3rem] shadow-xl border mb-6 text-center">
+                    <h2 class="font-black text-xl mb-2">Order Active</h2>
+                    <p class="text-xs font-bold text-indigo-600 uppercase mb-6">{{ myOrder.status }}</p>
+                    <button @click="cancelOrder" class="text-red-500 font-black text-xs uppercase">Cancel & Refund</button>
                 </div>
 
-                <div id="verify-map" class="mb-4"></div>
-
-                <div v-if="selectedLocation" class="p-6 bg-indigo-50 border border-indigo-100 rounded-3xl mb-4">
-                    <p class="text-[10px] font-black text-indigo-400 uppercase mb-2">Selected Store</p>
-                    <p class="text-sm font-bold text-slate-800 mb-4">{{ selectedLocation.name }}</p>
-                    
-                    <label class="text-[10px] font-black text-slate-400 uppercase block mb-1">Order Details</label>
-                    <textarea v-model="currentDescription" placeholder="Order name, number, or specific items..." class="w-full bg-white p-3 rounded-xl text-sm border-none outline-none" rows="2"></textarea>
+                <div v-else class="bg-white p-8 rounded-[3rem] shadow-xl border">
+                    <h2 class="text-2xl font-black mb-6">New Pickup</h2>
+                    <div v-if="step === 1">
+                        <input id="pickup-search" placeholder="Search Store..." class="w-full p-4 bg-slate-50 rounded-2xl font-bold mb-4 outline-none border focus:border-indigo-600">
+                        <div id="verify-map" class="mb-6"></div>
+                        <button @click="confirmStepOne" :disabled="!selectedLocation" class="w-full bg-slate-900 text-white py-5 rounded-3xl font-black shadow-lg">Confirm Location</button>
+                    </div>
                 </div>
-
-                <button @click="confirmStepOne" :disabled="!selectedLocation" :class="!selectedLocation ? 'opacity-50' : ''" class="w-full bg-slate-900 text-white py-5 rounded-3xl font-black mt-4 shadow-xl">Confirm & Next</button>
             </div>
 
-            <div v-if="step === 2">
-                <h2 class="text-2xl font-black mb-6 tracking-tight">Final Details</h2>
-                
-                <div class="p-4 bg-slate-50 rounded-2xl border mb-6">
-                    <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Delivery Address</label>
-                    <input id="delivery-search" placeholder="Search your home address..." class="w-full bg-transparent font-bold outline-none py-2">
+            <div v-if="activeTab === 'history'" class="space-y-4">
+                <h2 class="text-2xl font-black mb-6">Past Orders</h2>
+                <div class="p-6 bg-white rounded-3xl border border-dashed border-slate-300 text-center py-20 opacity-30">
+                    <i class="fas fa-box-open text-4xl mb-4"></i>
+                    <p class="font-black text-xs uppercase">No history found</p>
                 </div>
+            </div>
 
-                <div v-if="newOrder.delivery" class="space-y-3 p-6 bg-slate-100/50 rounded-[2rem] border border-slate-200">
-                    <p class="text-[10px] font-black text-slate-400 uppercase mb-2 text-center">Secure Payment Method</p>
-                    
-                    <input id="card-holder-name" placeholder="Name on Card" class="w-full card-field outline-none font-bold">
-                    <div id="card-number-container" class="card-field"></div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div id="card-expiry-container" class="card-field"></div>
-                        <div id="card-cvv-container" class="card-field"></div>
+            <div v-if="activeTab === 'profile'" class="text-center">
+                <div class="bg-white p-10 rounded-[3rem] shadow-xl border">
+                    <div class="w-20 h-20 bg-indigo-100 text-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-6 text-2xl font-black">
+                        {{ user.email[0].toUpperCase() }}
                     </div>
-
-                    <button @click="handleCardPayment" class="w-full bg-indigo-600 text-white py-5 rounded-2xl font-black mt-4 shadow-lg">
-                        Securely Pay $20.00
-                    </button>
+                    <h3 class="font-black text-lg text-slate-800 mb-1">{{ user.email }}</h3>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-10">Verified Customer</p>
+                    <button @click="logout" class="w-full bg-red-50 text-red-600 py-4 rounded-2xl font-black text-xs uppercase">Logout</button>
                 </div>
+            </div>
+        </main>
 
-                <button @click="step = 1" class="w-full text-slate-400 font-bold mt-6 text-xs uppercase underline">Back to Search</button>
+        <div class="fixed bottom-6 left-6 right-6 bg-indigo-900 rounded-[2.5rem] p-2 shadow-2xl z-[100] border border-white/10">
+            <div class="flex items-center justify-around h-16">
+                <button @click="activeTab = 'history'" :class="activeTab === 'history' ? 'nav-active' : 'text-indigo-400'" class="flex-1 flex flex-col items-center transition-all duration-300">
+                    <i class="fas fa-history text-xl"></i>
+                    <span class="text-[8px] font-black mt-1 uppercase tracking-tighter">History</span>
+                </button>
+                
+                <button @click="activeTab = 'home'" :class="activeTab === 'home' ? 'nav-active' : 'text-indigo-400'" class="flex-1 flex flex-col items-center transition-all duration-300">
+                    <i class="fas fa-home text-xl"></i>
+                    <span class="text-[8px] font-black mt-1 uppercase tracking-tighter">Home</span>
+                </button>
+                
+                <button @click="activeTab = 'profile'" :class="activeTab === 'profile' ? 'nav-active' : 'text-indigo-400'" class="flex-1 flex flex-col items-center transition-all duration-300">
+                    <i class="fas fa-user text-xl"></i>
+                    <span class="text-[8px] font-black mt-1 uppercase tracking-tighter">Profile</span>
+                </button>
             </div>
         </div>
-    </main>
+    </div>
 </div>
 
 <script>
-const firebaseConfig = { apiKey: "AIzaSyCgAjQPRCGAQEHyco2ORW6LdOv6yZ61nm0", databaseURL: "https://rustbucketdelivery-default-rtdb.firebaseio.com" };
+// Firebase Config (rustbucketdelivery)
+const firebaseConfig = {
+  apiKey: "AIzaSyCgAjQPRCGAQEHyco2ORW6LdOv6yZ61nm0",
+  authDomain: "rustbucketdelivery.firebaseapp.com",
+  databaseURL: "https://rustbucketdelivery-default-rtdb.firebaseio.com",
+  projectId: "rustbucketdelivery",
+  storageBucket: "rustbucketdelivery.firebasestorage.app",
+  messagingSenderId: "302970102953",
+  appId: "1:302970102953:web:5b0024408461a83705b5b8",
+  measurementId: "G-65JNM50N5N"
+};
+
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
+const auth = firebase.auth();
 const { createApp } = Vue;
 
 createApp({
     data() {
         return {
-            step: 1, myOrder: null, map: null, markers: [], selectedLocation: null,
-            infoWindow: null, cardFields: null, currentDescription: '',
-            newOrder: { name: '', pickups: [], delivery: '', dLat: null, dLng: null }
+            user: null, activeTab: 'home', step: 1,
+            auth: { email: '', password: '' },
+            myOrder: null, selectedLocation: null, map: null, marker: null
         }
     },
     methods: {
+        async handleLogin() {
+            try {
+                const res = await auth.signInWithEmailAndPassword(this.auth.email, this.auth.password);
+                this.user = res.user;
+                this.initMap();
+            } catch (e) { alert(e.message); }
+        },
+        async handleSignUp() {
+            try {
+                const res = await auth.createUserWithEmailAndPassword(this.auth.email, this.auth.password);
+                this.user = res.user;
+                this.initMap();
+            } catch (e) { alert(e.message); }
+        },
+        logout() { auth.signOut().then(() => this.user = null); },
         initMap() {
-            this.map = new google.maps.Map(document.getElementById("verify-map"), {
-                center: { lat: 41.25, lng: -95.95 }, zoom: 11, disableDefaultUI: true
-            });
-            this.infoWindow = new google.maps.InfoWindow();
-        },
-        executeSearch() {
-            const query = document.getElementById('pickup-search').value;
-            const service = new google.maps.places.PlacesService(this.map);
-            service.textSearch({ query, location: this.map.getCenter(), radius: 160934 }, (results, status) => {
-                if (status === 'OK') {
-                    this.markers.forEach(m => m.setMap(null));
-                    this.markers = results.map(place => {
-                        const m = new google.maps.Marker({ position: place.geometry.location, map: this.map });
-                        m.addListener("click", () => {
-                            this.infoWindow.setContent(`<div class="p-2"><h3 class="font-black">${place.name}</h3><button id="sel-btn" class="bg-indigo-600 text-white text-[10px] px-2 py-1 mt-2 rounded">Select</button></div>`);
-                            this.infoWindow.open(this.map, m);
-                            google.maps.event.addListenerOnce(this.infoWindow, 'domready', () => {
-                                document.getElementById('sel-btn').onclick = () => {
-                                    this.selectedLocation = { name: place.name + ", " + place.formatted_address, lat: place.geometry.location.lat(), lng: place.geometry.location.lng() };
-                                    this.infoWindow.close();
-                                };
-                            });
-                        });
-                        return m;
-                    });
-                }
-            });
-        },
-        confirmStepOne() {
-            this.newOrder.pickups = [{ ...this.selectedLocation, description: this.currentDescription }];
-            this.step = 2;
-            this.initDeliverySearch();
-        },
-        initDeliverySearch() {
+            if(!this.user) return;
             setTimeout(() => {
-                const searchBox = new google.maps.places.SearchBox(document.getElementById("delivery-search"));
+                const mapEl = document.getElementById("verify-map");
+                if(!mapEl) return;
+                this.map = new google.maps.Map(mapEl, { center: { lat: 41.25, lng: -95.95 }, zoom: 12, disableDefaultUI: true });
+                const searchBox = new google.maps.places.SearchBox(document.getElementById("pickup-search"));
                 searchBox.addListener("places_changed", () => {
                     const place = searchBox.getPlaces()[0];
-                    this.newOrder.delivery = place.formatted_address;
-                    this.newOrder.dLat = place.geometry.location.lat();
-                    this.newOrder.dLng = place.geometry.location.lng();
-                    this.initPayPalFields();
+                    if (this.marker) this.marker.setMap(null);
+                    this.marker = new google.maps.Marker({ map: this.map, position: place.geometry.location });
+                    this.selectedLocation = { name: place.name, lat: place.geometry.location.lat(), lng: place.geometry.location.lng() };
+                    this.map.setCenter(place.geometry.location);
                 });
             }, 500);
         },
-        initPayPalFields() {
-            if (paypal.CardFields) {
-                this.cardFields = paypal.CardFields({
-                    createOrder: (data, actions) => actions.order.create({ purchase_units: [{ amount: { value: "20.00" } }] }),
-                    onApprove: (data, actions) => actions.order.capture().then(this.finalize)
-                });
-                this.cardFields.NumberField().render("#card-number-container");
-                this.cardFields.ExpiryField().render("#card-expiry-container");
-                this.cardFields.CVVField().render("#card-cvv-container");
-            }
-        },
-        handleCardPayment() {
-            this.cardFields.submit({ cardholderName: document.getElementById('card-holder-name').value });
-        },
-        async finalize(details) {
-            const o = { ...this.newOrder, id: Date.now(), total: 20, status: 'pending_pickup', paypalId: details.id };
-            await db.ref('orders/' + o.id).set(o);
-            this.myOrder = o;
-            localStorage.setItem('rd_order_id', o.id);
-        },
-        async cancelOrder() {
-            if(confirm("Refund?")) { await db.ref('orders/' + this.myOrder.id).remove(); this.myOrder = null; localStorage.removeItem('rd_order_id'); }
-        }
+        confirmStepOne() { /* Proceed to payment step */ },
+        cancelOrder() { /* Firebase remove logic */ }
     },
     mounted() {
-        this.initMap();
-        const id = localStorage.getItem('rd_order_id');
-        if(id) db.ref('orders/' + id).on('value', snap => { this.myOrder = snap.val(); });
+        auth.onAuthStateChanged(u => {
+            this.user = u;
+            if(u) this.initMap();
+        });
     }
 }).mount('#app');
 </script>
