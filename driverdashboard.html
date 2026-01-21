@@ -1,75 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Driver Dashboard - TruckRoute</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-app.js"></script>
-    </head>
-<body>
-    <div id="login-overlay" class="auth-screen">
-        <div class="card login-card">
-            <h2>Driver Login</h2>
-            <input type="text" id="driver-id" placeholder="Driver ID">
-            <input type="password" placeholder="Password">
-            <button class="btn btn-primary" onclick="closeLogin()">Login</button>
-        </div>
-    </div>
-
-    <header class="main-header">
-        <div class="status-indicator">● Active Trip</div>
-        <button class="btn" onclick="toggleChat()">💬 Dispatch Chat</button>
+</head>
+<body style="flex-direction: column;">
+    <header style="height: 60px; background: var(--primary); display: flex; align-items: center; padding: 0 20px; justify-content: space-between;">
+        <strong>DRIVR PORTAL</strong>
+        <button class="btn btn-primary" onclick="toggleTab('driver-chat')">💬 Chat</button>
     </header>
 
-    <main class="container">
-        <div class="card">
-            <h3>Current Trip: <span id="trip-po">#PO-8829</span></h3>
-            <div id="driver-map" class="map-view"></div>
-            <button class="btn btn-success" style="width: 100%; margin-top: 10px;" onclick="startNavigation()">
-                🚀 Start Google Maps Navigation
-            </button>
-        </div>
+    <div class="main-stage">
+        <div id="map"></div>
 
-        <div id="load-confirmation" class="card">
-            <h3>New Load Assigned</h3>
-            <p>Route: Des Moines, IA ➔ Omaha, NE</p>
-            <label>Estimated Delivery Date/Time:</label>
-            <input type="datetime-local" id="eta-input" class="full-input">
-            
-            <div id="confirm-workflow" style="margin-top:15px;">
-                <button class="btn btn-primary" id="btn-1" onclick="stepConfirm(1)">Confirm Load</button>
-                <button class="btn btn-success hidden" id="btn-2" onclick="stepConfirm(2)">Confirm ETA</button>
-                <button class="btn btn-success hidden" id="btn-3" onclick="finalConfirm()">Confirm Final</button>
+        <div id="active-trip" class="tab-pane" style="bottom: 20px; top: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h3>Active Load: #PO-8829</h3>
+                <span class="btn-success" style="padding: 4px 8px; border-radius: 4px; font-size: 10px;">LIVE</span>
+            </div>
+            <p><strong>Next Stop:</strong> 123 Industrial Way, Des Moines</p>
+            <button class="btn btn-success" style="width: 100%;" onclick="openNav()">Navigate in Google Maps</button>
+            <div style="margin-top: 15px;">
+                <button class="btn" style="background: #444; width: 100%;" onclick="toggleDetails()">View Full Manifest</button>
             </div>
         </div>
-    </main>
 
-    <div id="chat-widget" class="chat-popup hidden">
-        <div class="chat-header">Contacts</div>
-        <div class="contact-list">
-            <div class="contact-item">Dispatcher (Main)</div>
-            <div class="contact-item">Driver: John Doe</div>
-        </div>
-        <div class="chat-messages" id="msg-area"></div>
-        <input type="text" placeholder="Message..." id="chat-input">
+        <div id="driver-chat" class="tab-pane hidden">
+            <h3>Messages</h3>
+            </div>
     </div>
 
     <script>
-        function stepConfirm(step) {
-            document.getElementById(`btn-${step}`).classList.add('hidden');
-            document.getElementById(`btn-${step+1}`).classList.remove('hidden');
+        function toggleTab(id) {
+            const el = document.getElementById(id);
+            el.classList.toggle('hidden');
         }
-        function finalConfirm() {
-            alert("Load Successfully Confirmed and Live!");
-            // Firebase Update Logic Here
+        function openNav() {
+            window.open("https://www.google.com/maps/dir/?api=1&destination=Des+Moines+IA");
         }
-        function startNavigation() {
-            // Placeholder address - this would be pulled from Firebase
-            const addr = "123 Main St, Omaha, NE";
-            window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(addr)}&travelmode=driving`);
-        }
-        function closeLogin() { document.getElementById('login-overlay').style.display = 'none'; }
     </script>
 </body>
 </html>
