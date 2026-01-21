@@ -1,68 +1,108 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="sidebar">
-        <h2 style="color: var(--accent); margin-bottom: 30px;">TRUCKR</h2>
-        <div class="nav-item active" onclick="switchTab('trip-planner')">📍 Trip Planner</div>
-        <div class="nav-item" onclick="switchTab('fleet-view')">🚚 Fleet Tracking</div>
-        <div class="nav-item" onclick="switchTab('customer-db')">👥 Customers</div>
-        <div class="nav-item" onclick="switchTab('chat-room')">💬 Dispatch Chat</div>
-        <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid #333;">
-            <p style="font-size: 12px; color: #777;">User: Dispatcher_01</p>
-            <button class="btn btn-primary" style="width:100%" onclick="location.href='index.html'">Logout</button>
-        </div>
-    </div>
+    <div id="map" style="position: fixed; width: 100%; height: 100%; z-index: 1;"></div>
 
-    <div class="main-stage">
-        <div id="map"></div>
-
-        <div id="trip-planner" class="tab-pane">
-            <h3>New Trip Load</h3>
-            <input type="text" placeholder="PO Number" class="full-input">
-            <div id="stops-container">
-                <div class="stop-box" style="background: #121417; padding: 10px; border-radius: 8px; margin-bottom: 10px;">
-                    <input type="text" placeholder="Customer Name" class="full-input">
-                    <input type="text" placeholder="Address" class="full-input">
-                    <textarea placeholder="Special Instructions" class="full-input"></textarea>
+    <div class="app-screen" style="position: relative; z-index: 2; pointer-events: none; background: transparent;">
+        
+        <div style="padding: 20px; pointer-events: auto;">
+            <div class="card" style="margin:0; display: flex; align-items: center; padding: 10px 20px;">
+                <span style="font-weight: bold; color: var(--primary);">DISPATCH</span>
+                <div style="margin-left: auto; display: flex; gap: 10px;">
+                    <label style="font-size: 11px; color: var(--text-gray);"><input type="checkbox" checked> Drivers</label>
+                    <label style="font-size: 11px; color: var(--text-gray);"><input type="checkbox" checked> Stops</label>
                 </div>
             </div>
-            <button class="btn btn-primary" onclick="addStop()">+ Add Stop</button>
-            <hr style="border: 0.5px solid #444; margin: 15px 0;">
-            <select class="full-input"><option>Select Driver...</option></select>
-            <button class="btn btn-success" style="width:100%">Dispatch Load</button>
+        </div>
+
+        <div id="trip-planner" class="tab-pane">
+            <div style="width: 40px; height: 4px; background: #e0e0e0; border-radius: 10px; margin: 0 auto 15px;"></div>
+            <h2>Create New Route</h2>
+            
+            <div class="input-field-group" style="margin-bottom: 20px;">
+                <label style="font-size: 11px; font-weight: 700; color: var(--text-gray);">PO NUMBER</label>
+                <input type="text" placeholder="e.g. #99281" class="input-field">
+            </div>
+
+            <div id="stops-container">
+                <div class="card" style="background: #F8F9FA; box-shadow: none; border: 1px solid var(--border); margin: 0 0 10px 0;">
+                    <input type="text" placeholder="Customer Name" class="input-field" style="background: white;">
+                    <input type="text" placeholder="Address" class="input-field" style="background: white;">
+                    <textarea placeholder="Priority instructions (Optional)..." class="input-field" style="background: white; height: 60px;"></textarea>
+                </div>
+            </div>
+
+            <button class="btn-main" style="background: #f0f0f0; color: var(--text-dark); margin-bottom: 10px;" onclick="addStop()">+ Add Waypoint</button>
+            
+            <div style="padding: 15px 0;">
+                <label style="font-size: 11px; font-weight: 700; color: var(--text-gray);">ASSIGN DRIVER</label>
+                <select class="input-field">
+                    <option>Select Active Driver...</option>
+                </select>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-main" style="flex: 2;" onclick="dispatchLoad()">Dispatch Load</button>
+                <button class="btn-main" style="flex: 1; background: var(--success);" onclick="optimizeRoute()">Optimize</button>
+            </div>
         </div>
 
         <div id="fleet-view" class="tab-pane hidden">
-            <h3>Active Fleet</h3>
-            <div style="margin-bottom: 15px;">
-                <label><input type="checkbox" checked> Show All Drivers</label>
-            </div>
-            <div class="driver-card" style="padding:10px; border-bottom:1px solid #333;">
-                <strong>Driver: John Doe</strong><br>
-                <small>Status: In Transit | PO: #8821</small>
+            <div style="width: 40px; height: 4px; background: #e0e0e0; border-radius: 10px; margin: 0 auto 15px;"></div>
+            <h2>Active Fleet</h2>
+            <div class="card" style="background: #F8F9FA; box-shadow: none; border: 1px solid var(--border); margin: 10px 0;">
+                <div style="display: flex; justify-content: space-between;">
+                    <strong>John Doe</strong>
+                    <span style="color: var(--success); font-size: 12px;">● Online</span>
+                </div>
+                <p style="margin: 5px 0 0 0;">Unit #442 | PO #8821</p>
             </div>
         </div>
 
         <div id="chat-room" class="tab-pane hidden">
-            <h3>Live Communication</h3>
-            <div id="chat-display" style="height: 300px; background: #000; margin-bottom: 10px; overflow-y: auto;"></div>
-            <div style="display: flex; gap: 5px;">
-                <input type="text" class="full-input" placeholder="Type message...">
-                <button class="btn btn-primary">Send</button>
+            <div style="width: 40px; height: 4px; background: #e0e0e0; border-radius: 10px; margin: 0 auto 15px;"></div>
+            <h2>Messages</h2>
+            <div id="chat-display" style="height: 250px; overflow-y: auto; margin-bottom: 15px;">
+                <div style="background: var(--primary); color: white; padding: 10px; border-radius: 12px; margin-bottom: 10px; width: fit-content;">
+                    Route updated for Unit 442.
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" class="input-field" placeholder="Message..." style="margin-bottom:0;">
+                <button class="btn-main" style="width: auto; padding: 0 20px;">Send</button>
+            </div>
+        </div>
+
+        <div class="bottom-nav" style="pointer-events: auto;">
+            <div class="nav-tab active" onclick="switchTab('trip-planner')">
+                <div style="font-size: 20px;">📍</div>
+                <span>Planner</span>
+            </div>
+            <div class="nav-tab" onclick="switchTab('fleet-view')">
+                <div style="font-size: 20px;">🚚</div>
+                <span>Fleet</span>
+            </div>
+            <div class="nav-tab" onclick="switchTab('chat-room')">
+                <div style="font-size: 20px;">💬</div>
+                <span>Chat</span>
             </div>
         </div>
     </div>
 
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="app-logic.js"></script>
+    <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDpSeGraT4Oee7tU5WjCfPr9Dskd0smdmU&callback=initMap"></script>
+
     <script>
         function switchTab(tabId) {
-            // Hide all panes
             document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
-            // Remove active class from nav
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            // Show selected
+            document.querySelectorAll('.nav-tab').forEach(n => n.classList.remove('active'));
             document.getElementById(tabId).classList.remove('hidden');
             event.currentTarget.classList.add('active');
         }
