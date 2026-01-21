@@ -1,41 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
 </head>
-<body style="flex-direction: column;">
-    <header style="height: 60px; background: var(--primary); display: flex; align-items: center; padding: 0 20px; justify-content: space-between;">
-        <strong>DRIVR PORTAL</strong>
-        <button class="btn btn-primary" onclick="toggleTab('driver-chat')">💬 Chat</button>
-    </header>
+<body>
+    <div id="map" style="height: 100vh;"></div>
 
-    <div class="main-stage">
-        <div id="map"></div>
-
-        <div id="active-trip" class="tab-pane" style="bottom: 20px; top: auto;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h3>Active Load: #PO-8829</h3>
-                <span class="btn-success" style="padding: 4px 8px; border-radius: 4px; font-size: 10px;">LIVE</span>
+    <div class="tab-pane" style="bottom: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: start;">
+            <div>
+                <span style="color: var(--accent); font-weight: bold; font-size: 12px;">ACTIVE LOAD #8829</span>
+                <h3 style="margin: 5px 0;">Omaha Distribution Center</h3>
+                <p style="color: var(--text-muted); font-size: 14px; margin: 0;">ETA: 10:45 AM</p>
             </div>
-            <p><strong>Next Stop:</strong> 123 Industrial Way, Des Moines</p>
-            <button class="btn btn-success" style="width: 100%;" onclick="openNav()">Navigate in Google Maps</button>
-            <div style="margin-top: 15px;">
-                <button class="btn" style="background: #444; width: 100%;" onclick="toggleDetails()">View Full Manifest</button>
-            </div>
+            <button style="background: #e1f5fe; color: var(--accent); border: none; padding: 8px 12px; border-radius: 8px;">Details</button>
         </div>
 
-        <div id="driver-chat" class="tab-pane hidden">
-            <h3>Messages</h3>
-            </div>
+        <div style="margin: 20px 0; display: flex; gap: 10px;">
+            <button class="btn-main" onclick="launchNav()">Start Navigation</button>
+            <button class="btn-main" style="background: #00b894; width: auto;">💬</button>
+        </div>
     </div>
 
     <script>
-        function toggleTab(id) {
-            const el = document.getElementById(id);
-            el.classList.toggle('hidden');
-        }
-        function openNav() {
-            window.open("https://www.google.com/maps/dir/?api=1&destination=Des+Moines+IA");
+        function launchNav() {
+            // Google Maps Deep Link
+            window.location.href = "google.navigation:q=123+Main+St+Omaha+NE";
         }
     </script>
 </body>
