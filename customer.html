@@ -28,9 +28,6 @@
 <div id="app" v-cloak>
     <div v-if="!user" class="min-h-screen flex items-center justify-center p-6 bg-slate-50">
         <div class="bg-white p-10 rounded-[3rem] shadow-2xl w-full max-w-md border border-slate-100">
-            <div class="bg-indigo-600 text-white w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-6">
-                <i class="fas fa-truck-fast"></i>
-            </div>
             <h2 class="text-3xl font-black mb-8 text-center tracking-tighter text-slate-800">RuralDrop</h2>
             <div class="space-y-4">
                 <input v-model="auth.email" type="email" placeholder="Email" class="w-full p-4 bg-slate-50 rounded-2xl outline-none border focus:border-indigo-600">
@@ -48,29 +45,21 @@
                     <h2 class="text-2xl font-black mb-6 uppercase tracking-tighter text-slate-800">New Request</h2>
                     <input id="pickup-search" placeholder="Search Stores (100mi)..." class="w-full p-4 bg-slate-50 rounded-2xl font-bold mb-4 outline-none border focus:border-indigo-600">
                     <div id="verify-map" class="mb-6"></div>
-                    <button @click="confirmPickup" :disabled="!selectedLocation" class="w-full bg-indigo-600 text-white py-5 rounded-3xl font-black shadow-lg">Confirm Pickup Point</button>
+                    <button @click="confirmPickup" :disabled="!selectedLocation" class="w-full bg-indigo-600 text-white py-5 rounded-3xl font-black shadow-lg">Confirm Store</button>
                 </div>
-                
                 <div v-else class="bg-white p-10 rounded-[3rem] shadow-xl text-center border">
-                    <div class="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-check"></i>
-                    </div>
                     <h2 class="font-black text-xl">Order Secured</h2>
                     <p class="text-xs font-bold text-indigo-600 uppercase mt-2">Status: {{ myOrder.status }}</p>
                 </div>
             </div>
 
             <div v-if="activeTab === 'history'" class="text-center py-20">
-                <i class="fas fa-clock-rotate-left text-4xl text-slate-200 mb-4"></i>
                 <h2 class="text-xl font-black text-slate-400 uppercase">Trip History</h2>
             </div>
 
             <div v-if="activeTab === 'profile'" class="bg-white p-10 rounded-[3rem] shadow-xl border text-center">
-                <div class="w-20 h-20 bg-slate-100 rounded-full mx-auto mb-4 flex items-center justify-center text-xl font-black">
-                    {{ user.email[0].toUpperCase() }}
-                </div>
-                <h2 class="font-black text-slate-800">{{ user.email }}</h2>
-                <button @click="logout" class="w-full bg-red-50 text-red-600 py-4 rounded-2xl font-black text-xs uppercase mt-10">Sign Out</button>
+                <h2 class="font-black text-slate-800 mb-6">{{ user.email }}</h2>
+                <button @click="logout" class="w-full bg-red-50 text-red-600 py-4 rounded-2xl font-black text-xs uppercase">Sign Out</button>
             </div>
         </main>
 
@@ -94,7 +83,7 @@
 </div>
 
 <script>
-// Verified Config from your Screenshot
+// Exact Firebase Config from your project screenshot
 const firebaseConfig = {
   apiKey: "AIzaSyCgAjQPRCGAQEHyco2ORW6LdOv6yZ61nm0",
   authDomain: "rustbucketdelivery.firebaseapp.com",
@@ -106,7 +95,7 @@ const firebaseConfig = {
   measurementId: "G-65JNM50N5N"
 };
 
-// Initialize
+// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const auth = firebase.auth();
@@ -148,10 +137,7 @@ createApp({
         }
     },
     mounted() {
-        auth.onAuthStateChanged(u => { 
-            this.user = u; 
-            if(u) this.initMap(); 
-        });
+        auth.onAuthStateChanged(u => { this.user = u; if(u) this.initMap(); });
     }
 }).mount('#app');
 </script>
