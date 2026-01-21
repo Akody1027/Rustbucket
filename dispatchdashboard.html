@@ -1,70 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="sidebar">
-        <h2 style="color: var(--accent); margin-bottom: 30px;">TRUCKR</h2>
-        <div class="nav-item active" onclick="switchTab('trip-planner')">📍 Trip Planner</div>
-        <div class="nav-item" onclick="switchTab('fleet-view')">🚚 Fleet Tracking</div>
-        <div class="nav-item" onclick="switchTab('customer-db')">👥 Customers</div>
-        <div class="nav-item" onclick="switchTab('chat-room')">💬 Dispatch Chat</div>
-        <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid #333;">
-            <p style="font-size: 12px; color: #777;">User: Dispatcher_01</p>
-            <button class="btn btn-primary" style="width:100%" onclick="location.href='index.html'">Logout</button>
+    <div id="map" style="height: 100vh; width: 100%;"></div>
+
+    <div id="planner-sheet" class="tab-pane">
+        <div style="width: 40px; height: 5px; background: #ddd; border-radius: 10px; margin: 0 auto 15px;"></div>
+        <h2 style="margin-top:0;">Plan New Route</h2>
+        
+        <div class="input-group">
+            <small>PO NUMBER</small>
+            <input type="text" placeholder="Enter PO #">
         </div>
+
+        <div id="stops">
+            <div class="input-group" style="border-left: 4px solid var(--accent);">
+                <small>STOP 1: CUSTOMER</small>
+                <input type="text" placeholder="Name">
+                <input type="text" placeholder="Address">
+                <textarea placeholder="Description / Priority Notes"></textarea>
+            </div>
+        </div>
+
+        <button class="btn-main" onclick="dispatchLoad()">Dispatch to Driver</button>
     </div>
 
-    <div class="main-stage">
-        <div id="map"></div>
-
-        <div id="trip-planner" class="tab-pane">
-            <h3>New Trip Load</h3>
-            <input type="text" placeholder="PO Number" class="full-input">
-            <div id="stops-container">
-                <div class="stop-box" style="background: #121417; padding: 10px; border-radius: 8px; margin-bottom: 10px;">
-                    <input type="text" placeholder="Customer Name" class="full-input">
-                    <input type="text" placeholder="Address" class="full-input">
-                    <textarea placeholder="Special Instructions" class="full-input"></textarea>
-                </div>
-            </div>
-            <button class="btn btn-primary" onclick="addStop()">+ Add Stop</button>
-            <hr style="border: 0.5px solid #444; margin: 15px 0;">
-            <select class="full-input"><option>Select Driver...</option></select>
-            <button class="btn btn-success" style="width:100%">Dispatch Load</button>
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="showTab('planner')">
+            <div style="font-size: 20px;">📍</div>
+            Planner
         </div>
-
-        <div id="fleet-view" class="tab-pane hidden">
-            <h3>Active Fleet</h3>
-            <div style="margin-bottom: 15px;">
-                <label><input type="checkbox" checked> Show All Drivers</label>
-            </div>
-            <div class="driver-card" style="padding:10px; border-bottom:1px solid #333;">
-                <strong>Driver: John Doe</strong><br>
-                <small>Status: In Transit | PO: #8821</small>
-            </div>
+        <div class="nav-item" onclick="showTab('fleet')">
+            <div style="font-size: 20px;">🚚</div>
+            Fleet
         </div>
-
-        <div id="chat-room" class="tab-pane hidden">
-            <h3>Live Communication</h3>
-            <div id="chat-display" style="height: 300px; background: #000; margin-bottom: 10px; overflow-y: auto;"></div>
-            <div style="display: flex; gap: 5px;">
-                <input type="text" class="full-input" placeholder="Type message...">
-                <button class="btn btn-primary">Send</button>
-            </div>
+        <div class="nav-item" onclick="showTab('chat')">
+            <div style="font-size: 20px;">💬</div>
+            Chat
         </div>
     </div>
 
     <script>
-        function switchTab(tabId) {
-            // Hide all panes
-            document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
-            // Remove active class from nav
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            // Show selected
-            document.getElementById(tabId).classList.remove('hidden');
-            event.currentTarget.classList.add('active');
+        function showTab(type) {
+            // Logic to slide the sheet up/down or change content
+            console.log("Switching to: " + type);
         }
     </script>
 </body>
