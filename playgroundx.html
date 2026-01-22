@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     
     <style>
-        /* --- 1. GLOBAL STYLES (Neutral with Purple Accent) --- */
+        /* --- 1. GLOBAL STYLES --- */
         :root {
             --accent: #8B5CF6; 
             --bg-dark: #121212;
@@ -33,72 +33,51 @@
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid #262626;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
+            position: sticky; top: 0; z-index: 1000;
         }
-
-        .logged-out-only { display: flex; gap: 10px; }
 
         /* --- 3. VIEW SWITCHER --- */
         .view-switcher {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            padding: 15px 0;
-            background: var(--bg-dark);
+            display: flex; justify-content: center; gap: 30px;
+            padding: 15px 0; background: var(--bg-dark);
         }
 
         .view-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 10px;
-            border-radius: 12px;
-            transition: 0.3s;
-            stroke: var(--text-dim);
+            background: none; border: none; cursor: pointer; padding: 10px;
+            border-radius: 12px; stroke: var(--text-dim);
         }
 
-        .view-btn.active {
-            background: rgba(139, 92, 246, 0.1);
-            stroke: var(--accent);
-        }
+        .view-btn.active { background: rgba(139, 92, 246, 0.1); stroke: var(--accent); }
 
-        /* --- 4. APP VIEWS --- */
         .app-view { display: none; padding: 0 20px 20px 20px; }
         .app-view.active { display: block; }
 
-        .swipe-container {
+        /* --- 4. VERIFICATION INPUT STYLES --- */
+        .file-input-wrapper {
             width: 100%;
-            max-width: 400px;
-            margin: 0 auto;
-            height: 65vh;
-            background: var(--card-dark);
-            border-radius: 24px;
-            overflow: hidden;
-            position: relative;
-            border: 1px solid #262626;
-        }
-
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        .grid-item { aspect-ratio: 1/1; background: var(--card-dark); border-radius: 8px; border: 1px solid #262626; }
-
-        #map-area {
-            width: 100%;
-            height: 70vh;
-            background: #1a1a1a;
-            border-radius: 20px;
+            height: 60px; /* Increased Height */
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 12px;
             display: flex;
             align-items: center;
-            justify-content: center;
-            color: var(--text-dim);
-            border: 1px solid #262626;
+            padding: 0 15px;
+            color: #666;
+            font-size: 14px;
+            cursor: pointer;
+            box-sizing: border-box;
+            margin-top: 5px;
+        }
+
+        .help-tooltip {
+            display: none;
+            background: #333;
+            color: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            margin-top: 5px;
+            border: 1px solid var(--accent);
         }
 
         @keyframes pulse-purple {
@@ -117,7 +96,7 @@
     </div>
 
     <div style="display: flex; align-items: center; gap: 12px;">
-        <div id="auth-btns" class="logged-out-only">
+        <div id="auth-btns" style="display: flex; gap: 10px;">
             <button style="background: transparent; color: white; border: 1px solid #444; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer;" onclick="toggleJoinModal()">Login</button>
             <button style="background: var(--accent); color: white; border: none; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer;" onclick="toggleJoinModal()">Join</button>
         </div>
@@ -136,118 +115,79 @@
 </div>
 
 <div id="join-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 4000; overflow-y: auto;">
-    <div style="max-width: 400px; margin: 50px auto; background: #1A1A1A; padding: 30px; border-radius: 24px; border: 1px solid #333; font-family: 'Inter', sans-serif;">
+    <div style="max-width: 400px; margin: 30px auto; background: #1A1A1A; padding: 30px; border-radius: 24px; border: 1px solid #333;">
         <h2 style="text-align: center; color: white; margin-top: 0;">Join playgroundX</h2>
-        <p style="text-align: center; color: #888; font-size: 13px; margin-bottom: 25px;">Verified accounts only for maximum safety.</p>
 
-        <button onclick="handleGoogleLogin()" style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #444; background: white; color: #000; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 20px;">
+        <button onclick="handleGoogleRedirect()" style="width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #444; background: white; color: #000; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 25px;">
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18"> Continue with Google
         </button>
 
-        <div style="text-align: center; color: #444; margin-bottom: 20px; font-size: 12px; font-weight: bold;">OR VERIFY MANUALLY</div>
-
-        <div style="display: flex; flex-direction: column; gap: 18px;">
+        <div style="display: flex; flex-direction: column; gap: 20px;">
             <div>
-                <label style="color: #888; font-size: 11px; text-transform: uppercase; font-weight: bold; display: block; margin-bottom: 5px;">Date of Birth</label>
-                <input type="date" id="verify-dob" onchange="checkAge()" style="width: 100%; background: #111; border: 1px solid #333; padding: 12px; border-radius: 10px; color: white; color-scheme: dark; outline: none; box-sizing: border-box;">
-                <p id="age-error" style="color: #FF385C; font-size: 11px; display: none; margin-top: 8px; font-weight: 600;">⚠️ Access Denied: You must be 18+ to enter.</p>
+                <label style="color: #888; font-size: 11px; text-transform: uppercase; font-weight: bold;">Date of Birth</label>
+                <input type="date" id="verify-dob" onchange="checkAge()" style="width: 100%; height: 50px; background: #111; border: 1px solid #333; padding: 12px; border-radius: 12px; color: white; color-scheme: dark; box-sizing: border-box;">
+                <p id="age-error" style="color: #FF385C; font-size: 11px; display: none; margin-top: 8px;">Access Denied: 18+ Only.</p>
             </div>
 
             <div>
-                <label style="color: #888; font-size: 11px; text-transform: uppercase; font-weight: bold; display: block; margin-bottom: 5px;">ID / Driver's License</label>
-                <input type="file" id="id-upload" accept="image/*" style="width: 100%; background: #111; border: 1px solid #333; padding: 10px; border-radius: 10px; color: #666; font-size: 12px;">
+                <label style="color: #888; font-size: 11px; text-transform: uppercase; font-weight: bold;">ID / Driver's License</label>
+                <input type="file" id="id-input" style="display: none;" onchange="updateFileName('id-input', 'id-label')">
+                <label for="id-input" id="id-label" class="file-input-wrapper">Tap to upload ID photo</label>
             </div>
 
             <div>
-                <label style="color: #888; font-size: 11px; text-transform: uppercase; font-weight: bold; display: block; margin-bottom: 5px;">Live Selfie (Hold up ✌️ sign)</label>
-                <input type="file" id="selfie-upload" accept="image/*" style="width: 100%; background: #111; border: 1px solid #333; padding: 10px; border-radius: 10px; color: #666; font-size: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <label style="color: #888; font-size: 11px; text-transform: uppercase; font-weight: bold;">Live Gesture Selfie</label>
+                    <div onclick="toggleHelp()" style="width: 16px; height: 16px; border-radius: 50%; background: var(--accent); color: white; font-size: 11px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold;">?</div>
+                </div>
+                <div id="selfie-help" class="help-tooltip">Take a photo of yourself making a "Peace Sign" (✌️). This proves you are a real person and matches your ID.</div>
+                
+                <input type="file" id="selfie-input" style="display: none;" onchange="updateFileName('selfie-input', 'selfie-label')">
+                <label for="selfie-input" id="selfie-label" class="file-input-wrapper">Tap to capture selfie</label>
             </div>
 
-            <button id="final-join-btn" disabled onclick="submitVerification()" style="width: 100%; background: #444; color: #888; border: none; padding: 16px; border-radius: 15px; font-weight: bold; cursor: not-allowed; margin-top: 10px; transition: 0.3s;">Verify & Enter</button>
+            <button id="final-join-btn" disabled onclick="submitVerification()" style="width: 100%; background: #444; color: #888; border: none; padding: 16px; border-radius: 15px; font-weight: bold; cursor: not-allowed;">Verify & Enter</button>
         </div>
         
-        <button onclick="toggleJoinModal()" style="width: 100%; background: none; border: none; color: #666; margin-top: 25px; cursor: pointer; font-size: 14px;">Cancel</button>
+        <button onclick="toggleJoinModal()" style="width: 100%; background: none; border: none; color: #666; margin-top: 25px; cursor: pointer;">Cancel</button>
     </div>
 </div>
 
 <div class="view-switcher">
-    <button class="view-btn active" id="btn-swipe" onclick="switchView('swipe')">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line></svg>
-    </button>
-    <button class="view-btn" id="btn-grid" onclick="switchView('grid')">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-    </button>
-    <button class="view-btn" id="btn-map" onclick="switchView('map')">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-    </button>
+    <button class="view-btn active" id="btn-swipe" onclick="switchView('swipe')"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line></svg></button>
+    <button class="view-btn" id="btn-grid" onclick="switchView('grid')"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg></button>
+    <button class="view-btn" id="btn-map" onclick="switchView('map')"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg></button>
 </div>
 
 <div id="view-swipe" class="app-view active">
-    <div class="swipe-container">
-        <div style="height: 100%; background: #333; display: flex; align-items: flex-end; padding: 20px; background-image: linear-gradient(to top, rgba(0,0,0,0.8), transparent);">
-            <div><h2 style="margin: 0;">Sarah, 25 <span style="color: var(--accent); font-size: 16px;">✓</span></h2><p style="color: var(--text-dim);">Nearby</p></div>
-        </div>
-    </div>
-    <div style="display: flex; justify-content: center; gap: 20px; margin-top: 20px;">
-        <button style="width: 60px; height: 60px; border-radius: 50%; border: 1px solid #444; background: none; color: white; font-size: 24px; cursor: pointer;">✘</button>
-        <button style="width: 60px; height: 60px; border-radius: 50%; border: none; background: var(--accent); color: white; font-size: 24px; cursor: pointer;">✔</button>
-    </div>
+    <div class="swipe-container"><div style="height: 100%; background: #333; display: flex; align-items: flex-end; padding: 20px;"><div><h2 style="margin: 0;">Sarah, 25 ✓</h2><p style="color: var(--text-dim);">Nearby</p></div></div></div>
 </div>
-
-<div id="view-grid" class="app-view"><div class="grid-container"><div class="grid-item"></div><div class="grid-item"></div><div class="grid-item"></div><div class="grid-item"></div><div class="grid-item"></div><div class="grid-item"></div></div></div>
-<div id="view-map" class="app-view"><div id="map-area">Map View (City Snapped)</div></div>
-
-<div id="profile-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 3000; overflow-y: auto;">
-    <div style="padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; position: sticky; top: 0; background: #000;">
-        <button onclick="toggleProfileModal()" style="background: none; border: none; color: #888; font-size: 16px; cursor: pointer;">Cancel</button>
-        <h2 style="color: white; margin: 0; font-size: 18px;">Edit Profile</h2>
-        <button onclick="toggleProfileModal()" style="background: none; border: none; color: var(--accent); font-size: 16px; font-weight: bold; cursor: pointer;">Save</button>
-    </div>
-
-    <div style="max-width: 500px; margin: 0 auto; padding: 30px 20px;">
-        <div style="text-align: center; margin-bottom: 20px;">
-            <div style="position: relative; width: 120px; height: 120px; margin: 0 auto;">
-                <img id="profile-preview" src="https://via.placeholder.com/120" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent);">
-                <label for="main-up" style="position: absolute; bottom: 0; right: 0; background: var(--accent); width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 3px solid #000; color: white; font-size: 22px; font-weight: bold;">+</label>
-                <input type="file" id="main-up" hidden onchange="previewImg(event, 'profile-preview')">
-            </div>
-        </div>
-        <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 30px;">
-            <div style="width: 70px; height: 70px; background: #111; border: 1px dashed #444; border-radius: 8px;"><label for="g1" style="display: block; width: 100%; height: 100%; cursor: pointer; text-align: center; line-height: 70px; color: var(--accent);"><input type="file" id="g1" hidden onchange="previewImg(event, 't1')"><img id="t1" style="width:100%; height:100%; object-fit: cover; display:none;"><span>+</span></label></div>
-            <div style="width: 70px; height: 70px; background: #111; border: 1px dashed #444; border-radius: 8px;"><label for="g2" style="display: block; width: 100%; height: 100%; cursor: pointer; text-align: center; line-height: 70px; color: var(--accent);"><input type="file" id="g2" hidden onchange="previewImg(event, 't2')"><img id="t2" style="width:100%; height:100%; object-fit: cover; display:none;"><span>+</span></label></div>
-            <div style="width: 70px; height: 70px; background: #111; border: 1px dashed #444; border-radius: 8px;"><label for="g3" style="display: block; width: 100%; height: 100%; cursor: pointer; text-align: center; line-height: 70px; color: var(--accent);"><input type="file" id="g3" hidden onchange="previewImg(event, 't3')"><img id="t3" style="width:100%; height:100%; object-fit: cover; display:none;"><span>+</span></label></div>
-            <div style="width: 70px; height: 70px; background: #111; border: 1px dashed #444; border-radius: 8px;"><label for="g4" style="display: block; width: 100%; height: 100%; cursor: pointer; text-align: center; line-height: 70px; color: var(--accent);"><input type="file" id="g4" hidden onchange="previewImg(event, 't4')"><img id="t4" style="width:100%; height:100%; object-fit: cover; display:none;"><span>+</span></label></div>
-        </div>
-
-        <div style="display: flex; flex-direction: column; gap: 20px;">
-            <div><label style="color: #888; font-size: 11px; text-transform: uppercase; font-weight: bold;">Bio</label><textarea placeholder="About you..." style="width: 100%; background: #111; border: 1px solid #333; padding: 12px; border-radius: 10px; color: white; margin-top: 5px; outline: none;"></textarea></div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                <div><label style="color: #888; font-size: 11px; text-transform: uppercase; font-weight: bold;">Gender</label><select style="width: 100%; background: #111; border: 1px solid #333; padding: 12px; border-radius: 10px; color: white; margin-top: 5px;"><option>Man</option><option>Woman</option><option>Couple</option></select></div>
-                <div><label style="color: #888; font-size: 11px; text-transform: uppercase; font-weight: bold;">Interested In</label><select style="width: 100%; background: #111; border: 1px solid #333; padding: 12px; border-radius: 10px; color: white; margin-top: 5px;"><option>Women</option><option>Men</option><option>Everyone</option></select></div>
-            </div>
-            <button onclick="toggleProfileModal()" style="width: 100%; background: var(--accent); color: white; border: none; padding: 16px; border-radius: 15px; font-weight: bold; cursor: pointer; margin-top: 20px;">Save Profile</button>
-        </div>
-    </div>
-</div>
+<div id="view-grid" class="app-view"><div class="grid-container"><div class="grid-item"></div><div class="grid-item"></div><div class="grid-item"></div></div></div>
+<div id="view-map" class="app-view"><div style="height: 70vh; background: #1a1a1a; display: flex; align-items: center; justify-content: center; border-radius: 20px;">Map Ready</div></div>
 
 <script>
-    // VIEW SWITCHING
-    function switchView(v) {
-        document.querySelectorAll('.app-view, .view-btn').forEach(el => el.classList.remove('active'));
-        document.getElementById('view-' + v).classList.add('active');
-        document.getElementById('btn-' + v).classList.add('active');
+    // 1. IOS OPTIMIZED GOOGLE LOGIN
+    function handleGoogleRedirect() {
+        alert("Redirecting to Google... (iOS Optimized)");
+        /* FIREBASE CODE:
+           const provider = new firebase.auth.GoogleAuthProvider();
+           firebase.auth().signInWithRedirect(provider);
+        */
     }
 
-    // MODAL & DROPDOWN LOGIC
-    function toggleUserDropdown() {
-        const d = document.getElementById('user-dropdown');
-        d.style.display = (d.style.display === 'block') ? 'none' : 'block';
+    // 2. HELP TOOLTIP
+    function toggleHelp() {
+        const help = document.getElementById('selfie-help');
+        help.style.display = (help.style.display === 'block') ? 'none' : 'block';
     }
 
-    function toggleProfileModal() {
-        const m = document.getElementById('profile-modal');
-        m.style.display = (m.style.display === 'block') ? 'none' : 'block';
-        document.getElementById('user-dropdown').style.display = 'none';
+    // 3. UI HELPERS
+    function updateFileName(inputId, labelId) {
+        const file = document.getElementById(inputId).files[0];
+        if (file) {
+            document.getElementById(labelId).innerText = "✓ " + file.name;
+            document.getElementById(labelId).style.color = "var(--accent)";
+        }
     }
 
     function toggleJoinModal() {
@@ -255,44 +195,32 @@
         m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
     }
 
-    // AGE CHECKER
     function checkAge() {
         const dobVal = document.getElementById('verify-dob').value;
         const dob = new Date(dobVal);
         const today = new Date();
         let age = today.getFullYear() - dob.getFullYear();
-        const m = today.getMonth() - dob.getMonth();
-        if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) { age--; }
-
+        if (new Date(today.getFullYear(), today.getMonth(), today.getDate()) < new Date(today.getFullYear(), dob.getMonth(), dob.getDate())) age--;
+        
         const btn = document.getElementById('final-join-btn');
-        const err = document.getElementById('age-error');
-
         if (age >= 18) {
             btn.disabled = false; btn.style.background = "var(--accent)"; btn.style.color = "white"; btn.style.cursor = "pointer";
-            err.style.display = "none";
+            document.getElementById('age-error').style.display = 'none';
         } else {
-            btn.disabled = true; btn.style.background = "#444"; btn.style.cursor = "not-allowed";
-            err.style.display = "block";
+            btn.disabled = true; document.getElementById('age-error').style.display = 'block';
         }
     }
 
-    function submitVerification() {
-        alert("Identity submitted for review. Access granted.");
-        toggleJoinModal();
-        simulateLogin();
+    function switchView(v) {
+        document.querySelectorAll('.app-view, .view-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById('view-' + v).classList.add('active');
+        document.getElementById('btn-' + v).classList.add('active');
     }
 
-    function previewImg(e, id) {
-        const r = new FileReader();
-        const out = document.getElementById(id);
-        r.onload = function() { out.src = r.result; out.style.display = 'block'; out.nextElementSibling.style.display = 'none'; }
-        r.readAsDataURL(e.target.files[0]);
+    function toggleUserDropdown() {
+        const d = document.getElementById('user-dropdown');
+        d.style.display = (d.style.display === 'block') ? 'none' : 'block';
     }
-
-    function simulateLogin() { document.getElementById('auth-btns').style.display = 'none'; }
-    function simulateLogout() { document.getElementById('auth-btns').style.display = 'flex'; toggleUserDropdown(); }
-
-    window.onclick = function(e) { if (!e.target.closest('#user-icon')) document.getElementById('user-dropdown').style.display = 'none'; }
 </script>
 
 </body>
