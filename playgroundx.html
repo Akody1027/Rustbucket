@@ -7,7 +7,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     
     <style>
-        /* --- 1. GLOBAL STYLES --- */
         :root {
             --accent: #8B5CF6; 
             --bg-dark: #121212;
@@ -25,7 +24,7 @@
             overflow-x: hidden;
         }
 
-        /* --- 2. HEADER --- */
+        /* --- HEADER & NAV --- */
         #header {
             background: #000;
             padding: 12px 20px;
@@ -36,7 +35,6 @@
             position: sticky; top: 0; z-index: 1000;
         }
 
-        /* --- 3. VIEW SWITCHER --- */
         .view-switcher {
             display: flex; justify-content: center; gap: 30px;
             padding: 15px 0; background: var(--bg-dark);
@@ -49,36 +47,81 @@
 
         .view-btn.active { background: rgba(139, 92, 246, 0.1); stroke: var(--accent); }
 
+        /* --- FILTER SYSTEM --- */
+        #filter-bar {
+            padding: 0 20px 15px 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .filter-trigger {
+            background: #1A1A1A;
+            border: 1px solid #333;
+            color: var(--text-dim);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #filter-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 5000;
+        }
+
+        .filter-content {
+            background: #1A1A1A;
+            width: 85%; max-width: 400px;
+            height: 100%;
+            float: right;
+            padding: 30px;
+            box-sizing: border-box;
+        }
+
+        /* --- APP VIEWS --- */
         .app-view { display: none; padding: 0 20px 20px 20px; }
         .app-view.active { display: block; }
 
-        /* --- 4. VERIFICATION INPUT STYLES --- */
-        .file-input-wrapper {
-            width: 100%;
-            height: 60px; /* Increased Height */
-            background: #111;
-            border: 1px solid #333;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            padding: 0 15px;
-            color: #666;
-            font-size: 14px;
-            cursor: pointer;
-            box-sizing: border-box;
-            margin-top: 5px;
+        /* Dummy Icons for Swipe & Grid */
+        .dummy-avatar {
+            width: 100%; height: 100%;
+            background: #2a2a2a;
+            display: flex; align-items: center; justify-content: center;
         }
 
-        .help-tooltip {
-            display: none;
-            background: #333;
-            color: #fff;
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 12px;
-            margin-top: 5px;
-            border: 1px solid var(--accent);
+        .swipe-container {
+            width: 100%; max-width: 400px;
+            margin: 0 auto; height: 60vh;
+            background: var(--card-dark);
+            border-radius: 24px; overflow: hidden;
+            border: 1px solid #262626;
         }
+
+        .grid-container {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 10px; max-width: 600px; margin: 0 auto;
+        }
+
+        .grid-item { aspect-ratio: 1/1; background: var(--card-dark); border-radius: 8px; overflow: hidden; }
+
+        /* Map Pin Placeholder */
+        .map-pin {
+            width: 40px; height: 40px;
+            background: var(--accent);
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            display: flex; align-items: center; justify-content: center;
+            position: absolute; top: 40%; left: 50%;
+            cursor: pointer;
+            border: 2px solid white;
+        }
+        .map-pin div { transform: rotate(45deg); }
 
         @keyframes pulse-purple {
             0% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.7); }
@@ -94,62 +137,8 @@
         <div style="background: var(--accent); color: white; width: 35px; height: 35px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 20px; margin-right: 10px;">X</div>
         <h1 style="color: white; margin: 0; font-size: 20px; letter-spacing: -1px;">playground<span style="color: var(--accent);">X</span></h1>
     </div>
-
-    <div style="display: flex; align-items: center; gap: 12px;">
-        <div id="auth-btns" style="display: flex; gap: 10px;">
-            <button style="background: transparent; color: white; border: 1px solid #444; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer;" onclick="toggleJoinModal()">Login</button>
-            <button style="background: var(--accent); color: white; border: none; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer;" onclick="toggleJoinModal()">Join</button>
-        </div>
-        
-        <div style="position: relative;">
-            <div id="user-icon" onclick="toggleUserDropdown()" style="width: 38px; height: 38px; background: #222; border: 2px solid #444; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;">
-                <div id="nav-dot" style="position: absolute; top: 2px; right: 2px; width: 8px; height: 8px; background: var(--accent); border-radius: 50%; border: 2px solid #000; animation: pulse-purple 2s infinite;"></div>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-            </div>
-            <div id="user-dropdown" style="display: none; position: absolute; top: 48px; right: 0; background: #1A1A1A; border: 1px solid #333; border-radius: 12px; width: 160px; z-index: 1100;">
-                <a href="#" style="display: block; padding: 12px; color: white; text-decoration: none; font-size: 14px; border-bottom: 1px solid #333;" onclick="toggleProfileModal()">My Profile</a>
-                <a href="#" style="display: block; padding: 12px; color: var(--accent); text-decoration: none; font-size: 14px; font-weight: bold;" onclick="simulateLogout()">Log Out</a>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div id="join-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 4000; overflow-y: auto;">
-    <div style="max-width: 400px; margin: 30px auto; background: #1A1A1A; padding: 30px; border-radius: 24px; border: 1px solid #333;">
-        <h2 style="text-align: center; color: white; margin-top: 0;">Join playgroundX</h2>
-
-        <button onclick="handleGoogleRedirect()" style="width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #444; background: white; color: #000; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 25px;">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18"> Continue with Google
-        </button>
-
-        <div style="display: flex; flex-direction: column; gap: 20px;">
-            <div>
-                <label style="color: #888; font-size: 11px; text-transform: uppercase; font-weight: bold;">Date of Birth</label>
-                <input type="date" id="verify-dob" onchange="checkAge()" style="width: 100%; height: 50px; background: #111; border: 1px solid #333; padding: 12px; border-radius: 12px; color: white; color-scheme: dark; box-sizing: border-box;">
-                <p id="age-error" style="color: #FF385C; font-size: 11px; display: none; margin-top: 8px;">Access Denied: 18+ Only.</p>
-            </div>
-
-            <div>
-                <label style="color: #888; font-size: 11px; text-transform: uppercase; font-weight: bold;">ID / Driver's License</label>
-                <input type="file" id="id-input" style="display: none;" onchange="updateFileName('id-input', 'id-label')">
-                <label for="id-input" id="id-label" class="file-input-wrapper">Tap to upload ID photo</label>
-            </div>
-
-            <div>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <label style="color: #888; font-size: 11px; text-transform: uppercase; font-weight: bold;">Live Gesture Selfie</label>
-                    <div onclick="toggleHelp()" style="width: 16px; height: 16px; border-radius: 50%; background: var(--accent); color: white; font-size: 11px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold;">?</div>
-                </div>
-                <div id="selfie-help" class="help-tooltip">Take a photo of yourself making a "Peace Sign" (✌️). This proves you are a real person and matches your ID.</div>
-                
-                <input type="file" id="selfie-input" style="display: none;" onchange="updateFileName('selfie-input', 'selfie-label')">
-                <label for="selfie-input" id="selfie-label" class="file-input-wrapper">Tap to capture selfie</label>
-            </div>
-
-            <button id="final-join-btn" disabled onclick="submitVerification()" style="width: 100%; background: #444; color: #888; border: none; padding: 16px; border-radius: 15px; font-weight: bold; cursor: not-allowed;">Verify & Enter</button>
-        </div>
-        
-        <button onclick="toggleJoinModal()" style="width: 100%; background: none; border: none; color: #666; margin-top: 25px; cursor: pointer;">Cancel</button>
+    <div id="user-icon" onclick="toggleUserDropdown()" style="width: 38px; height: 38px; background: #222; border: 2px solid #444; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
     </div>
 </div>
 
@@ -159,68 +148,87 @@
     <button class="view-btn" id="btn-map" onclick="switchView('map')"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg></button>
 </div>
 
-<div id="view-swipe" class="app-view active">
-    <div class="swipe-container"><div style="height: 100%; background: #333; display: flex; align-items: flex-end; padding: 20px;"><div><h2 style="margin: 0;">Sarah, 25 ✓</h2><p style="color: var(--text-dim);">Nearby</p></div></div></div>
+<div id="filter-bar">
+    <button class="filter-trigger" onclick="toggleFilter()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+        Refine Search
+    </button>
 </div>
-<div id="view-grid" class="app-view"><div class="grid-container"><div class="grid-item"></div><div class="grid-item"></div><div class="grid-item"></div></div></div>
-<div id="view-map" class="app-view"><div style="height: 70vh; background: #1a1a1a; display: flex; align-items: center; justify-content: center; border-radius: 20px;">Map Ready</div></div>
+
+<div id="filter-modal">
+    <div class="filter-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <h2 style="margin: 0;">Filters</h2>
+            <button onclick="toggleFilter()" style="background: none; border: none; color: white; font-size: 20px;">✕</button>
+        </div>
+        
+        <div style="display: flex; flex-direction: column; gap: 25px;">
+            <div>
+                <label style="color: #888; font-size: 11px; text-transform: uppercase; font-weight: bold; display: block; margin-bottom: 10px;">Show Me</label>
+                <select style="width: 100%; background: #000; border: 1px solid #333; color: white; padding: 12px; border-radius: 10px;">
+                    <option>Everyone</option><option>Men</option><option>Women</option><option>Couples</option>
+                </select>
+            </div>
+            <div>
+                <label style="color: #888; font-size: 11px; text-transform: uppercase; font-weight: bold; display: block; margin-bottom: 10px;">Max Distance (Miles)</label>
+                <input type="range" min="1" max="100" value="25" style="width: 100%; accent-color: var(--accent);">
+            </div>
+            <div>
+                <label style="color: #888; font-size: 11px; text-transform: uppercase; font-weight: bold; display: block; margin-bottom: 10px;">Verification Status</label>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" style="accent-color: var(--accent);">
+                    <span style="font-size: 14px;">Verified Members Only</span>
+                </div>
+            </div>
+            <button class="view-btn" onclick="toggleFilter()" style="background: var(--accent); color: white; width: 100%; padding: 15px; border-radius: 15px; font-weight: bold; margin-top: 20px;">Apply Filters</button>
+        </div>
+    </div>
+</div>
+
+<div id="view-swipe" class="app-view active">
+    <div class="swipe-container">
+        <div class="dummy-avatar">
+            <svg width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="1"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        </div>
+        <div style="position: absolute; bottom: 0; width: 100%; padding: 20px; background: linear-gradient(to top, black, transparent);">
+            <h2 style="margin: 0;">Alex, 28 ✓</h2>
+            <p style="color: var(--text-dim); font-size: 14px;">5 miles away</p>
+        </div>
+    </div>
+</div>
+
+<div id="view-grid" class="app-view">
+    <div class="grid-container">
+        <div class="grid-item"><div class="dummy-avatar"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="1"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div></div>
+        <div class="grid-item"><div class="dummy-avatar"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="1"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div></div>
+        <div class="grid-item"><div class="dummy-avatar"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="1"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div></div>
+        <div class="grid-item"><div class="dummy-avatar"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="1"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div></div>
+        <div class="grid-item"><div class="dummy-avatar"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="1"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div></div>
+        <div class="grid-item"><div class="dummy-avatar"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="1"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div></div>
+    </div>
+</div>
+
+<div id="view-map" class="app-view">
+    <div style="height: 70vh; background: #1a1a1a; border-radius: 24px; position: relative; border: 1px solid #262626;">
+        <div class="map-pin" onclick="alert('Profile: Alex, 28')">
+            <div><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div>
+        </div>
+    </div>
+</div>
 
 <script>
-    // 1. IOS OPTIMIZED GOOGLE LOGIN
-    function handleGoogleRedirect() {
-        alert("Redirecting to Google... (iOS Optimized)");
-        /* FIREBASE CODE:
-           const provider = new firebase.auth.GoogleAuthProvider();
-           firebase.auth().signInWithRedirect(provider);
-        */
-    }
-
-    // 2. HELP TOOLTIP
-    function toggleHelp() {
-        const help = document.getElementById('selfie-help');
-        help.style.display = (help.style.display === 'block') ? 'none' : 'block';
-    }
-
-    // 3. UI HELPERS
-    function updateFileName(inputId, labelId) {
-        const file = document.getElementById(inputId).files[0];
-        if (file) {
-            document.getElementById(labelId).innerText = "✓ " + file.name;
-            document.getElementById(labelId).style.color = "var(--accent)";
-        }
-    }
-
-    function toggleJoinModal() {
-        const m = document.getElementById('join-modal');
-        m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
-    }
-
-    function checkAge() {
-        const dobVal = document.getElementById('verify-dob').value;
-        const dob = new Date(dobVal);
-        const today = new Date();
-        let age = today.getFullYear() - dob.getFullYear();
-        if (new Date(today.getFullYear(), today.getMonth(), today.getDate()) < new Date(today.getFullYear(), dob.getMonth(), dob.getDate())) age--;
-        
-        const btn = document.getElementById('final-join-btn');
-        if (age >= 18) {
-            btn.disabled = false; btn.style.background = "var(--accent)"; btn.style.color = "white"; btn.style.cursor = "pointer";
-            document.getElementById('age-error').style.display = 'none';
-        } else {
-            btn.disabled = true; document.getElementById('age-error').style.display = 'block';
-        }
-    }
-
     function switchView(v) {
         document.querySelectorAll('.app-view, .view-btn').forEach(el => el.classList.remove('active'));
         document.getElementById('view-' + v).classList.add('active');
         document.getElementById('btn-' + v).classList.add('active');
     }
 
-    function toggleUserDropdown() {
-        const d = document.getElementById('user-dropdown');
-        d.style.display = (d.style.display === 'block') ? 'none' : 'block';
+    function toggleFilter() {
+        const m = document.getElementById('filter-modal');
+        m.style.display = (m.style.display === 'block') ? 'none' : 'block';
     }
+
+    function toggleUserDropdown() { alert('Dropdown placeholder'); }
 </script>
 
 </body>
