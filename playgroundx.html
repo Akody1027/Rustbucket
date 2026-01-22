@@ -111,6 +111,91 @@
     </style>
 </head>
 <body>
+        <div id="auth-module" style="font-family: 'Inter', sans-serif; background: #000; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #FF385C; position: sticky; top: 0; z-index: 1000;">
+    
+    <div style="display: flex; align-items: center; cursor: pointer;" onclick="location.reload()">
+        <div style="background: #FF385C; color: white; width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 24px; margin-right: 12px; box-shadow: 0 0 15px rgba(255, 56, 92, 0.4);">X</div>
+        <h1 style="color: white; margin: 0; font-size: 22px; letter-spacing: -1px;">playground<span style="color: #FF385C;">X</span></h1>
+    </div>
+
+    <div style="display: flex; gap: 15px;">
+        <button onclick="toggleAuthModal('login')" style="background: transparent; color: white; border: 1px solid #444; padding: 8px 18px; border-radius: 20px; font-weight: 600; cursor: pointer; transition: 0.3s;">Login</button>
+        <button onclick="toggleAuthModal('signup')" style="background: #FF385C; color: white; border: none; padding: 8px 22px; border-radius: 20px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 10px rgba(255, 56, 92, 0.3);">Join the Club</button>
+    </div>
+
+    <div id="auth-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); backdrop-filter: blur(5px); justify-content: center; align-items: center; z-index: 2000;">
+        <div style="background: #1A1A1A; width: 90%; max-width: 400px; padding: 40px; border-radius: 25px; border: 1px solid #333; position: relative; text-align: center;">
+            <button onclick="toggleAuthModal()" style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: #666; font-size: 20px; cursor: pointer;">✕</button>
+            
+            <h2 id="auth-title" style="color: white; margin-bottom: 10px;">Welcome Back</h2>
+            <p id="auth-subtitle" style="color: #888; font-size: 14px; margin-bottom: 30px;">Must be 18+ to enter the playground.</p>
+
+            <form onsubmit="handleAuthSubmit(event)" style="display: flex; flex-direction: column; gap: 15px;">
+                <input type="email" id="auth-email" placeholder="Email Address" required style="background: #222; border: 1px solid #444; padding: 12px 15px; border-radius: 10px; color: white; outline: none;">
+                <input type="password" id="auth-password" placeholder="Password" required style="background: #222; border: 1px solid #444; padding: 12px 15px; border-radius: 10px; color: white; outline: none;">
+                
+                <button type="submit" id="auth-submit-btn" style="background: #FF385C; color: white; border: none; padding: 14px; border-radius: 10px; font-weight: bold; font-size: 16px; margin-top: 10px; cursor: pointer;">Enter</button>
+            </form>
+            
+            <p style="color: #666; font-size: 13px; margin-top: 25px;">
+                <span id="auth-toggle-text">Don't have an account?</span> 
+                <a href="#" onclick="switchAuthMode()" id="auth-toggle-link" style="color: #FF385C; text-decoration: none; font-weight: bold;">Sign Up</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Logic to open/close the pop-up
+    function toggleAuthModal(mode) {
+        const overlay = document.getElementById('auth-overlay');
+        if (mode) {
+            overlay.style.display = 'flex';
+            if (mode === 'signup') switchAuthMode('signup');
+            else switchAuthMode('login');
+        } else {
+            overlay.style.display = 'none';
+        }
+    }
+
+    // Logic to switch between Login and Sign Up text
+    function switchAuthMode(targetMode) {
+        const title = document.getElementById('auth-title');
+        const submitBtn = document.getElementById('auth-submit-btn');
+        const toggleLink = document.getElementById('auth-toggle-link');
+        const toggleText = document.getElementById('auth-toggle-text');
+
+        if (targetMode === 'signup' || (title.innerText === 'Welcome Back' && !targetMode)) {
+            title.innerText = 'Create Account';
+            submitBtn.innerText = 'Start Playing';
+            toggleText.innerText = 'Already a member?';
+            toggleLink.innerText = 'Login';
+        } else {
+            title.innerText = 'Welcome Back';
+            submitBtn.innerText = 'Enter';
+            toggleText.innerText = "Don't have an account?";
+            toggleLink.innerText = 'Sign Up';
+        }
+    }
+
+    // This is where you will eventually link your Firebase Auth code
+    function handleAuthSubmit(e) {
+        e.preventDefault();
+        const email = document.getElementById('auth-email').value;
+        const pass = document.getElementById('auth-password').value;
+        const mode = document.getElementById('auth-title').innerText;
+
+        console.log("Attempting " + mode + " for: " + email);
+        alert(mode + " successful! (Firebase Logic goes here next)");
+        toggleAuthModal(); // Close modal on success
+    }
+</script>
+    
+
+
+
+
+    
 
     <nav>
         <button onclick="showPage('discovery')" id="btn-discovery" class="active">APP VIEW</button>
@@ -207,3 +292,4 @@
 
 </body>
 </html>
+
