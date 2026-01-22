@@ -10,7 +10,6 @@
         /* --- 1. GLOBAL STYLES (Neutral with Purple Accent) --- */
         :root {
             --accent: #8B5CF6; /* Vibrant Purple */
-            --accent-dark: #6D28D9;
             --bg-dark: #121212;
             --card-dark: #1E1E1E;
             --text-main: #E5E7EB;
@@ -26,7 +25,7 @@
             overflow-x: hidden;
         }
 
-        /* --- 2. HEADER STYLES --- */
+        /* --- 2. HEADER --- */
         #header {
             background: #000;
             padding: 12px 20px;
@@ -39,12 +38,9 @@
             z-index: 1000;
         }
 
-        .auth-buttons { display: flex; gap: 10px; }
-        /* These classes handle showing/hiding buttons based on login status */
-        .logged-in-only { display: none; } 
-        .logged-out-only { display: flex; }
+        .logged-out-only { display: flex; gap: 10px; }
 
-        /* --- 3. VIEW SWITCHER (The 3 Icons) --- */
+        /* --- 3. VIEW SWITCHER --- */
         .view-switcher {
             display: flex;
             justify-content: center;
@@ -68,16 +64,15 @@
             stroke: var(--accent);
         }
 
-        /* --- 4. APP MODES (Swipe, Grid, Map) --- */
+        /* --- 4. APP VIEWS --- */
         .app-view { display: none; padding: 0 20px 20px 20px; }
         .app-view.active { display: block; }
 
-        /* SWIPE VIEW: Full Size */
         .swipe-container {
             width: 100%;
             max-width: 400px;
             margin: 0 auto;
-            height: 70vh;
+            height: 65vh;
             background: var(--card-dark);
             border-radius: 24px;
             overflow: hidden;
@@ -85,7 +80,6 @@
             border: 1px solid #262626;
         }
 
-        /* GRID VIEW: 3 Column */
         .grid-container {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -93,55 +87,18 @@
             max-width: 600px;
             margin: 0 auto;
         }
-        .grid-item {
-            aspect-ratio: 1/1;
-            background: var(--card-dark);
-            border-radius: 8px;
-        }
+        .grid-item { aspect-ratio: 1/1; background: var(--card-dark); border-radius: 8px; border: 1px solid #262626; }
 
-        /* MAP VIEW */
-        #map-view-area {
+        #map-area {
             width: 100%;
             height: 70vh;
-            background: #262626;
+            background: #1a1a1a;
             border-radius: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--text-dim);
-        }
-
-        /* --- 5. UI COMPONENTS --- */
-        .btn-purple {
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        #user-dropdown {
-            display: none;
-            position: absolute;
-            top: 50px;
-            right: 0;
-            background: #1A1A1A;
-            border: 1px solid #333;
-            border-radius: 12px;
-            width: 160px;
-            overflow: hidden;
-            z-index: 1100;
-        }
-
-        #user-dropdown a {
-            display: block;
-            padding: 12px;
-            color: white;
-            text-decoration: none;
-            font-size: 14px;
-            border-bottom: 1px solid #333;
+            border: 1px solid #262626;
         }
 
         @keyframes pulse-purple {
@@ -161,19 +118,18 @@
 
     <div style="display: flex; align-items: center; gap: 12px;">
         <div id="auth-btns" class="logged-out-only">
-            <button class="btn-purple" style="background: transparent; border: 1px solid #444;" onclick="simulateLogin()">Login</button>
-            <button class="btn-purple" onclick="simulateLogin()">Join</button>
+            <button style="background: transparent; color: white; border: 1px solid #444; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer;" onclick="simulateLogin()">Login</button>
+            <button style="background: var(--accent); color: white; border: none; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer;" onclick="simulateLogin()">Join</button>
         </div>
         
         <div style="position: relative;">
-            <div id="user-icon" onclick="toggleUserDropdown()" style="width: 38px; height: 38px; background: #222; border: 2px solid #444; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative;">
+            <div id="user-icon" onclick="toggleUserDropdown()" style="width: 38px; height: 38px; background: #222; border: 2px solid #444; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;">
                 <div id="nav-dot" style="position: absolute; top: 2px; right: 2px; width: 8px; height: 8px; background: var(--accent); border-radius: 50%; border: 2px solid #000; animation: pulse-purple 2s infinite;"></div>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
             </div>
-
-            <div id="user-dropdown">
-                <a href="#" onclick="toggleProfileModal()">My Profile</a>
-                <a href="#" style="color: var(--accent);" onclick="simulateLogout()">Log Out</a>
+            <div id="user-dropdown" style="display: none; position: absolute; top: 48px; right: 0; background: #1A1A1A; border: 1px solid #333; border-radius: 12px; width: 160px; z-index: 1100;">
+                <a href="#" style="display: block; padding: 12px; color: white; text-decoration: none; font-size: 14px; border-bottom: 1px solid #333;" onclick="toggleProfileModal()">My Profile</a>
+                <a href="#" style="display: block; padding: 12px; color: var(--accent); text-decoration: none; font-size: 14px; font-weight: bold;" onclick="simulateLogout()">Log Out</a>
             </div>
         </div>
     </div>
@@ -193,67 +149,84 @@
 
 <div id="view-swipe" class="app-view active">
     <div class="swipe-container">
-        <div style="height: 100%; background: #333; display: flex; align-items: flex-end; padding: 20px;">
-            <div>
-                <h2 style="margin: 0;">Sarah, 25</h2>
-                <p style="color: var(--text-dim);">2 miles away</p>
-            </div>
+        <div style="height: 100%; background: #333; display: flex; align-items: flex-end; padding: 20px; background-image: linear-gradient(to top, rgba(0,0,0,0.8), transparent);">
+            <div><h2 style="margin: 0;">Sarah, 25</h2><p style="color: var(--text-dim);">Nearby</p></div>
         </div>
     </div>
     <div style="display: flex; justify-content: center; gap: 20px; margin-top: 20px;">
-        <button style="width: 60px; height: 60px; border-radius: 50%; border: 1px solid #444; background: none; color: white; font-size: 24px;">✘</button>
-        <button style="width: 60px; height: 60px; border-radius: 50%; border: none; background: var(--accent); color: white; font-size: 24px;">✔</button>
+        <button style="width: 60px; height: 60px; border-radius: 50%; border: 1px solid #444; background: none; color: white; font-size: 24px; cursor: pointer;">✘</button>
+        <button style="width: 60px; height: 60px; border-radius: 50%; border: none; background: var(--accent); color: white; font-size: 24px; cursor: pointer;">✔</button>
     </div>
 </div>
 
-<div id="view-grid" class="app-view">
-    <div class="grid-container">
-        <div class="grid-item"></div><div class="grid-item"></div><div class="grid-item"></div>
-        <div class="grid-item"></div><div class="grid-item"></div><div class="grid-item"></div>
-    </div>
-</div>
+<div id="view-grid" class="app-view"><div class="grid-container"><div class="grid-item"></div><div class="grid-item"></div><div class="grid-item"></div><div class="grid-item"></div><div class="grid-item"></div><div class="grid-item"></div></div></div>
 
-<div id="view-map" class="app-view">
-    <div id="map-view-area">Map View Loaded (City Snap)</div>
-</div>
+<div id="view-map" class="app-view"><div id="map-area">Map View (City Snapped)</div></div>
 
 <div id="profile-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 3000; overflow-y: auto;">
-    <div style="padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222;">
-        <button onclick="toggleProfileModal()" style="background: none; border: none; color: var(--text-dim); cursor: pointer;">Cancel</button>
-        <h2 style="font-size: 18px;">Profile</h2>
-        <button onclick="toggleProfileModal()" style="background: none; border: none; color: var(--accent); font-weight: bold; cursor: pointer;">Save</button>
+    <div style="padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; position: sticky; top: 0; background: #000;">
+        <button onclick="toggleProfileModal()" style="background: none; border: none; color: #888; font-size: 16px; cursor: pointer;">Cancel</button>
+        <h2 style="color: white; margin: 0; font-size: 18px;">Edit Profile</h2>
+        <button onclick="toggleProfileModal()" style="background: none; border: none; color: var(--accent); font-size: 16px; font-weight: bold; cursor: pointer;">Save</button>
     </div>
-    <div style="padding: 40px 20px; text-align: center;">
-        <div style="width: 100px; height: 100px; background: #333; border-radius: 50%; margin: 0 auto 20px auto; border: 2px solid var(--accent);"></div>
-        <input type="text" placeholder="Display Name" style="width: 100%; max-width: 300px; background: #111; border: 1px solid #333; padding: 12px; border-radius: 10px; color: white;">
+
+    <div style="max-width: 500px; margin: 0 auto; padding: 30px 20px;">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <div style="position: relative; width: 120px; height: 120px; margin: 0 auto;">
+                <img id="profile-preview" src="https://via.placeholder.com/120" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent);">
+                <label for="main-up" style="position: absolute; bottom: 0; right: 0; background: var(--accent); width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 3px solid #000; color: white; font-size: 22px; font-weight: bold;">+</label>
+                <input type="file" id="main-up" hidden onchange="previewImg(event, 'profile-preview')">
+            </div>
+        </div>
+        <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 30px;">
+            <div style="width: 70px; height: 70px; background: #111; border: 1px dashed #444; border-radius: 8px; position: relative;">
+                <input type="file" id="g1" hidden onchange="previewImg(event, 't1')">
+                <label for="g1" style="display: block; width: 100%; height: 100%; cursor: pointer; text-align: center; line-height: 70px; color: var(--accent);">
+                    <img id="t1" style="width:100%; height:100%; object-fit: cover; display:none; border-radius: 8px;"><span>+</span>
+                </label>
+            </div>
+            <div style="width: 70px; height: 70px; background: #111; border: 1px dashed #444; border-radius: 8px; position: relative;">
+                <input type="file" id="g2" hidden onchange="previewImg(event, 't2')">
+                <label for="g2" style="display: block; width: 100%; height: 100%; cursor: pointer; text-align: center; line-height: 70px; color: var(--accent);">
+                    <img id="t2" style="width:100%; height:100%; object-fit: cover; display:none; border-radius: 8px;"><span>+</span>
+                </label>
+            </div>
+            <div style="width: 70px; height: 70px; background: #111; border: 1px dashed #444; border-radius: 8px; position: relative;">
+                <input type="file" id="g3" hidden onchange="previewImg(event, 't3')">
+                <label for="g3" style="display: block; width: 100%; height: 100%; cursor: pointer; text-align: center; line-height: 70px; color: var(--accent);">
+                    <img id="t3" style="width:100%; height:100%; object-fit: cover; display:none; border-radius: 8px;"><span>+</span>
+                </label>
+            </div>
+            <div style="width: 70px; height: 70px; background: #111; border: 1px dashed #444; border-radius: 8px; position: relative;">
+                <input type="file" id="g4" hidden onchange="previewImg(event, 't4')">
+                <label for="g4" style="display: block; width: 100%; height: 100%; cursor: pointer; text-align: center; line-height: 70px; color: var(--accent);">
+                    <img id="t4" style="width:100%; height:100%; object-fit: cover; display:none; border-radius: 8px;"><span>+</span>
+                </label>
+            </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+            <div><label style="color: #888; font-size: 11px; text-transform: uppercase; font-weight: bold;">Bio</label><textarea placeholder="About you..." style="width: 100%; background: #111; border: 1px solid #333; padding: 12px; border-radius: 10px; color: white; margin-top: 5px; outline: none;"></textarea></div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div><label style="color: #888; font-size: 11px; text-transform: uppercase; font-weight: bold;">Gender</label><select style="width: 100%; background: #111; border: 1px solid #333; padding: 12px; border-radius: 10px; color: white; margin-top: 5px;"><option>Man</option><option>Woman</option><option>Couple</option></select></div>
+                <div><label style="color: #888; font-size: 11px; text-transform: uppercase; font-weight: bold;">Interested In</label><select style="width: 100%; background: #111; border: 1px solid #333; padding: 12px; border-radius: 10px; color: white; margin-top: 5px;"><option>Women</option><option>Men</option><option>Everyone</option></select></div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div><label style="color: #888; font-size: 11px; text-transform: uppercase; font-weight: bold;">Status</label><select style="width: 100%; background: #111; border: 1px solid #333; padding: 12px; border-radius: 10px; color: white; margin-top: 5px;"><option>Single</option><option>Attached</option></select></div>
+                <div><label style="color: #888; font-size: 11px; text-transform: uppercase; font-weight: bold;">Age</label><input type="number" placeholder="21" style="width: 100%; background: #111; border: 1px solid #333; padding: 12px; border-radius: 10px; color: white; margin-top: 5px;"></div>
+            </div>
+            <button onclick="toggleProfileModal()" style="width: 100%; background: var(--accent); color: white; border: none; padding: 16px; border-radius: 15px; font-weight: bold; cursor: pointer; margin-top: 20px;">Save Profile</button>
+        </div>
     </div>
 </div>
 
 <script>
-    // VIEW SWITCHING LOGIC
-    function switchView(viewName) {
-        // Hide all views
-        document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active'));
-        document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
-        
-        // Show selected
-        document.getElementById('view-' + viewName).classList.add('active');
-        document.getElementById('btn-' + viewName).classList.add('active');
+    function switchView(v) {
+        document.querySelectorAll('.app-view, .view-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById('view-' + v).classList.add('active');
+        document.getElementById('btn-' + v).classList.add('active');
     }
 
-    // AUTH TOGGLE LOGIC (Simulated for your UI test)
-    function simulateLogin() {
-        document.getElementById('auth-btns').style.display = 'none';
-        alert("Logged in! Login/Join buttons are now hidden.");
-    }
-
-    function simulateLogout() {
-        document.getElementById('auth-btns').style.display = 'flex';
-        toggleUserDropdown();
-        alert("Logged out! Login/Join buttons are visible again.");
-    }
-
-    // DROPDOWN & MODAL LOGIC
     function toggleUserDropdown() {
         const d = document.getElementById('user-dropdown');
         d.style.display = (d.style.display === 'block') ? 'none' : 'block';
@@ -265,11 +238,20 @@
         document.getElementById('user-dropdown').style.display = 'none';
     }
 
-    window.onclick = function(e) {
-        if (!e.target.closest('#user-icon')) {
-            document.getElementById('user-dropdown').style.display = 'none';
+    function previewImg(e, id) {
+        const r = new FileReader();
+        const out = document.getElementById(id);
+        r.onload = function() { 
+            out.src = r.result; out.style.display = 'block';
+            if(out.nextElementSibling) out.nextElementSibling.style.display = 'none';
         }
+        r.readAsDataURL(e.target.files[0]);
     }
+
+    function simulateLogin() { document.getElementById('auth-btns').style.display = 'none'; }
+    function simulateLogout() { document.getElementById('auth-btns').style.display = 'flex'; toggleUserDropdown(); }
+
+    window.onclick = function(e) { if (!e.target.closest('#user-icon')) document.getElementById('user-dropdown').style.display = 'none'; }
 </script>
 
 </body>
