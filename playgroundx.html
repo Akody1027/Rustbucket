@@ -35,6 +35,7 @@
             display: flex; justify-content: space-between; align-items: center;
             border-bottom: 1px solid #262626; position: sticky; top: 0; z-index: 1000;
         }
+        .header-icons { display: flex; gap: 15px; align-items: center; }
 
         #user-dropdown {
             display: none; position: absolute; top: 60px; right: 20px; 
@@ -79,18 +80,22 @@
         }
         .swipe-card img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
         
-        /* UPDATED CARD INFO: No Gradient, Text Shadow Added */
+        /* NO GRADIENT + TEXT SHADOW */
         .card-info {
             position: absolute; bottom: 0; width: 100%; padding: 25px;
-            background: none; /* Gradient Removed */
+            background: none; 
         }
         .card-title { 
             margin: 0; color: var(--accent); font-size: 24px; font-weight: 700; 
-            text-shadow: 0 2px 4px rgba(0,0,0,0.9); /* Shadow for readability */
+            text-shadow: 0 2px 4px rgba(0,0,0,1); /* Heavy shadow for contrast */
         }
         .card-dist {
             color: white; font-weight: bold; margin-top: 5px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.9);
+            text-shadow: 0 2px 4px rgba(0,0,0,1);
+        }
+        .card-sub {
+            color: rgba(255,255,255,0.9); font-size: 12px;
+            text-shadow: 0 2px 3px rgba(0,0,0,1);
         }
 
         .action-btns {
@@ -105,7 +110,6 @@
         /* --- GRID VIEW --- */
         .grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
         .grid-item { aspect-ratio: 1/1; background: #333; border-radius: 8px; overflow: hidden; position: relative; }
-        /* Grid still keeps the gradient for text readability on small boxes */
         .grid-overlay {
             position: absolute; bottom: 0; width: 100%; padding: 8px 5px;
             background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
@@ -113,15 +117,18 @@
             color: var(--accent); font-size: 12px; font-weight: bold;
         }
 
-        /* --- MAP VIEW --- */
-        #map { width: 100%; height: 68vh; border-radius: 20px; border: 1px solid #333; }
+        /* --- MAP VIEW (HIGH CONTRAST) --- */
+        #map { 
+            width: 100%; height: 68vh; border-radius: 20px; border: 1px solid #333; 
+            filter: contrast(1.2) brightness(1.1); /* Pop the lines */
+        }
         
         .my-location-pin {
             background: transparent;
             border: 3px solid var(--accent);
             border-radius: 50%;
             box-shadow: 0 0 10px var(--accent-glow);
-            cursor: move; /* Indicates Draggable */
+            cursor: move;
         }
 
         .app-view { display: none; padding: 0 15px 20px 15px; }
@@ -136,6 +143,16 @@
             padding: 20px; border-bottom: 1px solid #222; display: flex; 
             justify-content: space-between; align-items: center; position: sticky; top: 0; background: #000; z-index: 10;
         }
+
+        /* --- MESSAGING TABS --- */
+        .tab-group { display: flex; width: 100%; border-bottom: 1px solid #333; }
+        .tab-btn { flex: 1; background: none; border: none; padding: 15px; color: #888; font-weight: bold; cursor: pointer; border-bottom: 2px solid transparent; }
+        .tab-btn.active { color: var(--accent); border-bottom: 2px solid var(--accent); }
+        .tab-pane { display: none; padding: 20px; }
+        .tab-pane.active { display: block; }
+
+        .msg-item, .wink-item { display: flex; gap: 15px; padding: 15px; background: #111; border-radius: 12px; align-items: center; border: 1px solid #222; margin-bottom: 10px; }
+        .msg-avatar { width: 50px; height: 50px; border-radius: 50%; background: #333; overflow: hidden; object-fit: cover; }
 
         /* --- GALLERY --- */
         .gallery-grid {
@@ -206,8 +223,13 @@
         <div style="background: var(--accent); color: white; width: 35px; height: 35px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 20px; margin-right: 10px;">X</div>
         <h1 style="color: white; margin: 0; font-size: 20px;">playground<span style="color: var(--accent);">X</span></h1>
     </div>
-    <div id="user-icon-trigger" style="width: 40px; height: 40px; background: #222; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px solid #444;">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+    <div class="header-icons">
+        <div onclick="openMsgModal()" style="cursor: pointer;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+        </div>
+        <div id="user-icon-trigger" style="width: 40px; height: 40px; background: #222; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px solid #444;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        </div>
     </div>
     <div id="user-dropdown">
         <a href="#" id="open-my-profile">My Profile</a>
@@ -233,8 +255,7 @@
 </div>
 
 <div id="view-swipe" class="app-view active">
-    <div id="swipe-zone">
-        </div>
+    <div id="swipe-zone"></div>
     <div class="action-btns">
         <button id="btn-reject" class="swipe-btn" onclick="userSwipe('left')">✘</button>
         <button class="swipe-btn" style="width: 45px; height: 45px; font-size: 18px; border-color: var(--accent); color: var(--accent);" onclick="renderDeck()">⟲</button>
@@ -243,8 +264,7 @@
 </div>
 
 <div id="view-grid" class="app-view">
-    <div class="grid-container" id="grid-content">
-        </div>
+    <div class="grid-container" id="grid-content"></div>
 </div>
 
 <div id="view-map" class="app-view">
@@ -259,7 +279,9 @@
     </div>
     <div style="padding: 20px; max-width: 500px; margin: 0 auto;">
         
-        <div style="text-align: center; margin-bottom: 20px;">
+        <div><label class="filter-label" style="margin-top:0;">DISPLAY NAME (ALIAS)</label><input type="text" id="p-alias" class="style-input" placeholder="e.g. Jay_Rocker"></div>
+
+        <div style="text-align: center; margin: 20px 0;">
             <div style="position: relative; width: 120px; height: 120px; margin: 0 auto;">
                 <img id="my-main-preview" src="https://via.placeholder.com/120" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent);">
                 <label for="main-up" style="position: absolute; bottom: 0; right: 0; background: var(--accent); width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 3px solid #000; color: white; font-size: 22px; font-weight: bold;">+</label>
@@ -282,6 +304,14 @@
         <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px;">
             <div><label class="filter-label" style="margin-top:0;">BIO</label><textarea id="p-bio" style="width: 100%; background: #111; border: 1px solid #333; padding: 12px; border-radius: 10px; color: white;"></textarea></div>
             
+            <div class="toggle-row"><span>Show Explicit Content</span><input type="checkbox" id="p-explicit" class="toggle-checkbox"><label for="p-explicit" class="toggle-switch"></label></div>
+
+            <div class="toggle-row"><span>Use GPS Location</span><input type="checkbox" id="p-use-gps" class="toggle-checkbox" checked onchange="toggleAccordion('loc-manual', !this.checked)"><label for="p-use-gps" class="toggle-switch"></label></div>
+            <div id="loc-manual" class="accordion-content">
+                <label class="filter-label" style="margin-top:0;">MANUAL CITY/ZIP</label>
+                <input type="text" class="style-input" placeholder="Enter City...">
+            </div>
+
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                 <div><label class="filter-label">GENDER</label><select id="p-gender" class="style-input"><option>Man</option><option>Woman</option><option>Transgender</option><option>Non-Binary</option><option>Couple</option></select></div>
                 <div><label class="filter-label">AGE</label><input type="number" id="p-age" class="style-input" value="21"></div>
@@ -292,6 +322,7 @@
                 <div><label class="filter-label">HEIGHT (cm)</label><input type="number" id="p-height" class="style-input" placeholder="175"></div>
             </div>
             
+            <div><label class="filter-label">RELATIONSHIP TYPE</label><select id="p-rel-type" class="style-input"><option>Marriage</option><option>Long-Term</option><option>Short-Term</option><option>Intimacy w/o Connection</option><option>Friends</option><option>FWB</option></select></div>
             <div><label class="filter-label">SEXUAL ORIENTATION</label><select id="p-ori" class="style-input"><option>Straight</option><option>Gay</option><option>Lesbian</option><option>Bisexual</option><option>Pansexual</option></select></div>
             <div><label class="filter-label">RELIGION</label><select id="p-rel" class="style-input"><option>Christian</option><option>Muslim</option><option>Jewish</option><option>Hindu</option><option>Atheist</option><option>Agnostic</option><option>Spiritual</option><option>Other</option></select></div>
             <div><label class="filter-label">PETS</label><select id="p-pets" class="style-input"><option>Dog</option><option>Cat</option><option>Bird</option><option>Reptile</option><option>None</option><option>Allergic</option></select></div>
@@ -300,11 +331,9 @@
             <div><label class="filter-label">EDUCATION</label><select id="p-edu" class="style-input"><option>High School</option><option>Undergrad</option><option>Postgrad</option></select></div>
             <div><label class="filter-label">ZODIAC</label><select id="p-zod" class="style-input"><option>Aries</option><option>Taurus</option><option>Gemini</option><option>Cancer</option><option>Leo</option><option>Virgo</option><option>Libra</option><option>Scorpio</option><option>Sagittarius</option><option>Capricorn</option><option>Aquarius</option><option>Pisces</option></select></div>
             <div><label class="filter-label">FAMILY PLANS</label><select id="p-fam" class="style-input"><option>Not Sure</option><option>Want Kids</option><option>Have Kids</option><option>Don't Want Kids</option></select></div>
-
         </div>
     </div>
 </div>
-
 <div id="view-user-modal" class="modal">
     <div class="modal-header">
         <button onclick="document.getElementById('view-user-modal').style.display='none'" style="background: none; border: none; color: #888;">Back</button>
@@ -333,17 +362,15 @@
             <div class="gallery-slot" style="background: #222; border-color: var(--accent);">▶</div>
         </div>
         
-        <h1 id="view-user-name" style="margin: 0; font-size: 28px; color: var(--accent);">Name, Age</h1>
+        <h1 id="view-user-name" style="margin: 0; font-size: 28px; color: var(--accent);">Alias</h1>
         <p style="color: #666; font-size: 13px; font-weight: bold; margin-bottom: 15px;">Verified Member ✓</p>
 
-        <div class="stats-grid" id="view-user-chips">
-            </div>
-        
+        <div class="stats-grid" id="view-user-chips"></div>
         <p style="color: #ccc; line-height: 1.5; margin-bottom: 50px;" id="view-user-bio">...</p>
     </div>
 
     <div class="sticky-actions">
-        <button class="action-btn-main" style="background: #222; color: white; border: 1px solid #444;" onclick="alert('Sent a Wink! 😉')">😉 Wink</button>
+        <button class="action-btn-main" style="background: #222; color: white; border: 1px solid #444;" onclick="alert('Wink Sent! 😉')">😉 Wink</button>
         <button class="action-btn-main" style="background: var(--accent); color: white;" onclick="alert('Opening Chat... 💬')">💬 Message</button>
     </div>
 </div>
@@ -365,65 +392,22 @@
         <label class="filter-label">DISTANCE: <span id="dist-val" style="color:var(--accent)">50 mi</span></label>
         <input type="range" min="1" max="200" value="50" oninput="document.getElementById('dist-val').innerText = this.value + ' mi'" style="accent-color: var(--accent); width: 100%;">
 
+        <label class="filter-label">RELATIONSHIP TYPE</label>
+        <div class="toggle-row"><span>Select Type</span><input type="checkbox" id="t-rt" class="toggle-checkbox" onchange="toggleAccordion('ac-rt', this.checked)"><label for="t-rt" class="toggle-switch"></label></div>
+        <div id="ac-rt" class="accordion-content">
+            <label class="radio-option"><input type="checkbox" class="f-rt" value="Marriage"> Marriage</label>
+            <label class="radio-option"><input type="checkbox" class="f-rt" value="Long-Term"> Long-Term</label>
+            <label class="radio-option"><input type="checkbox" class="f-rt" value="Short-Term"> Short-Term</label>
+            <label class="radio-option"><input type="checkbox" class="f-rt" value="Intimacy w/o Connection"> Intimacy w/o Connection</label>
+        </div>
+
         <label class="filter-label">RELIGION</label>
         <div class="toggle-row"><span>Select Religion</span><input type="checkbox" id="t-rel" class="toggle-checkbox" onchange="toggleAccordion('ac-rel', this.checked)"><label for="t-rel" class="toggle-switch"></label></div>
         <div id="ac-rel" class="accordion-content">
             <label class="radio-option"><input type="checkbox" class="f-rel" value="Christian"> Christian</label>
             <label class="radio-option"><input type="checkbox" class="f-rel" value="Muslim"> Muslim</label>
             <label class="radio-option"><input type="checkbox" class="f-rel" value="Jewish"> Jewish</label>
-            <label class="radio-option"><input type="checkbox" class="f-rel" value="Hindu"> Hindu</label>
             <label class="radio-option"><input type="checkbox" class="f-rel" value="Spiritual"> Spiritual</label>
-            <label class="radio-option"><input type="checkbox" class="f-rel" value="Agnostic"> Agnostic</label>
-            <label class="radio-option"><input type="checkbox" class="f-rel" value="Atheist"> Atheist</label>
-        </div>
-
-        <label class="filter-label">PETS</label>
-        <div class="toggle-row"><span>Select Pets</span><input type="checkbox" id="t-pets" class="toggle-checkbox" onchange="toggleAccordion('ac-pets', this.checked)"><label for="t-pets" class="toggle-switch"></label></div>
-        <div id="ac-pets" class="accordion-content">
-            <label class="radio-option"><input type="checkbox" class="f-pets" value="Dog"> Dog</label>
-            <label class="radio-option"><input type="checkbox" class="f-pets" value="Cat"> Cat</label>
-            <label class="radio-option"><input type="checkbox" class="f-pets" value="None"> None</label>
-        </div>
-
-        <label class="filter-label">POLITICS</label>
-        <div class="toggle-row"><span>Select Politics</span><input type="checkbox" id="t-pol" class="toggle-checkbox" onchange="toggleAccordion('ac-pol', this.checked)"><label for="t-pol" class="toggle-switch"></label></div>
-        <div id="ac-pol" class="accordion-content">
-            <label class="radio-option"><input type="checkbox" class="f-pol" value="Liberal"> Liberal</label>
-            <label class="radio-option"><input type="checkbox" class="f-pol" value="Conservative"> Conservative</label>
-            <label class="radio-option"><input type="checkbox" class="f-pol" value="Moderate"> Moderate</label>
-        </div>
-
-        <label class="filter-label">VICES</label>
-        <div class="toggle-row"><span>Select Vices</span><input type="checkbox" id="t-vice" class="toggle-checkbox" onchange="toggleAccordion('ac-vice', this.checked)"><label for="t-vice" class="toggle-switch"></label></div>
-        <div id="ac-vice" class="accordion-content">
-            <label class="radio-option"><input type="checkbox" class="f-vice" value="Smoker"> Smoker</label>
-            <label class="radio-option"><input type="checkbox" class="f-vice" value="420 Friendly"> 420 Friendly</label>
-            <label class="radio-option"><input type="checkbox" class="f-vice" value="Social Drinker"> Social Drinker</label>
-        </div>
-
-        <label class="filter-label">EDUCATION</label>
-        <div class="toggle-row"><span>Select Education</span><input type="checkbox" id="t-edu" class="toggle-checkbox" onchange="toggleAccordion('ac-edu', this.checked)"><label for="t-edu" class="toggle-switch"></label></div>
-        <div id="ac-edu" class="accordion-content">
-            <label class="radio-option"><input type="checkbox" class="f-edu" value="Undergrad"> Undergrad</label>
-            <label class="radio-option"><input type="checkbox" class="f-edu" value="Postgrad"> Postgrad</label>
-        </div>
-
-        <label class="filter-label">ZODIAC</label>
-        <div class="toggle-row"><span>Select Zodiac</span><input type="checkbox" id="t-zod" class="toggle-checkbox" onchange="toggleAccordion('ac-zod', this.checked)"><label for="t-zod" class="toggle-switch"></label></div>
-        <div id="ac-zod" class="accordion-content">
-            <label class="radio-option"><input type="checkbox" class="f-zod" value="Aries"> Aries</label>
-            <label class="radio-option"><input type="checkbox" class="f-zod" value="Leo"> Leo</label>
-            <label class="radio-option"><input type="checkbox" class="f-zod" value="Sagittarius"> Sagittarius</label>
-            <label class="radio-option"><input type="checkbox" class="f-zod" value="Cancer"> Cancer</label>
-            <label class="radio-option"><input type="checkbox" class="f-zod" value="Scorpio"> Scorpio</label>
-            <label class="radio-option"><input type="checkbox" class="f-zod" value="Pisces"> Pisces</label>
-            </div>
-
-        <label class="filter-label">FAMILY PLANS</label>
-        <div class="toggle-row"><span>Select Plans</span><input type="checkbox" id="t-fam" class="toggle-checkbox" onchange="toggleAccordion('ac-fam', this.checked)"><label for="t-fam" class="toggle-switch"></label></div>
-        <div id="ac-fam" class="accordion-content">
-            <label class="radio-option"><input type="checkbox" class="f-fam" value="Want Kids"> Want Kids</label>
-            <label class="radio-option"><input type="checkbox" class="f-fam" value="Don't Want Kids"> Don't Want Kids</label>
         </div>
 
         <button onclick="applyFilters()" style="width:100%; background: var(--accent); padding: 15px; border-radius: 12px; border:none; color:white; font-weight:bold; margin-top: 20px;">Apply Filters</button>
@@ -431,54 +415,77 @@
     </div>
 </div>
 
+<div id="msg-modal" class="modal">
+    <div class="modal-header">
+        <button class="back-arrow" onclick="document.getElementById('msg-modal').style.display='none'">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="white" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        </button>
+        <h2 style="font-size: 18px; margin: 0; color: white;">Comm Center</h2>
+        <div style="width: 24px;"></div>
+    </div>
+    
+    <div class="tab-group">
+        <button class="tab-btn active" onclick="openTab('tab-winks', this)">Winks 😉</button>
+        <button class="tab-btn" onclick="openTab('tab-chats', this)">Messages 💬</button>
+    </div>
+
+    <div id="tab-winks" class="tab-pane active">
+        <div class="wink-item">
+            <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=100" class="msg-avatar">
+            <div><h3 style="margin:0;color:white;font-size:14px;">Chloe_X</h3><p style="margin:0;color:#888;font-size:12px;">Winked 2m ago</p></div>
+        </div>
+        <div class="wink-item">
+            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100" class="msg-avatar">
+            <div><h3 style="margin:0;color:white;font-size:14px;">Sarah_99</h3><p style="margin:0;color:#888;font-size:12px;">Winked 1h ago</p></div>
+        </div>
+    </div>
+
+    <div id="tab-chats" class="tab-pane">
+        <div class="msg-item">
+            <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100" class="msg-avatar">
+            <div><h3 style="margin:0;color:white;font-size:14px;">Jess_Vibes</h3><p style="margin:0;color:#888;font-size:12px;">Hey! Are you nearby?</p></div>
+        </div>
+    </div>
+</div>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-    // --- 1. LIVE BACKEND (MOCK DATA & LOCAL STORAGE) ---
+    // --- 1. MOCK DATA & LOCAL STORAGE ---
+    const ALIAS_PRE = ['Jay', 'Cool', 'Wild', 'Soft', 'Dark', 'Light', 'Neo', 'Retro'];
+    const ALIAS_SUF = ['Rocker', 'Vibes', 'Soul', 'King', 'Queen', 'X', '99', 'Walker'];
     
-    // Arrays for random generation
-    const NAMES_F = ['Jessica', 'Sarah', 'Chloe', 'Anna', 'Emily', 'Mia', 'Sofia', 'Isabella'];
-    const NAMES_M = ['Mike', 'Tom', 'Chris', 'James', 'David', 'Daniel', 'Ryan', 'Kevin'];
-    const IMGS_F = [
-        'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=500&fit=crop',
-        'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=500&fit=crop',
-        'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500&fit=crop',
-        'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=500&fit=crop'
-    ];
-    const IMGS_M = [
-        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&fit=crop',
-        'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=500&fit=crop',
-        'https://images.unsplash.com/photo-1480455624313-e29b44bbfde1?w=500&fit=crop'
-    ];
-    
-    const DATA_RELIGION = ['Christian', 'Muslim', 'Jewish', 'Hindu', 'Atheist', 'Agostic', 'Spiritual', 'Other'];
-    const DATA_POLITICS = ['Liberal', 'Conservative', 'Moderate', 'Apolitical'];
+    const DATA_RELIGION = ['Christian', 'Muslim', 'Jewish', 'Hindu', 'Atheist', 'Spiritual', 'Other'];
+    const DATA_REL_TYPE = ['Marriage', 'Long-Term', 'Short-Term', 'Intimacy w/o Connection', 'Friends', 'FWB'];
     const DATA_PETS = ['Dog', 'Cat', 'None', 'Reptile', 'Bird'];
     const DATA_VICES = ['None', 'Smoker', 'Social Drinker', '420 Friendly'];
-    const DATA_EDU = ['High School', 'Undergrad', 'Postgrad'];
-    const DATA_ZOD = ['Aries', 'Leo', 'Sagittarius', 'Cancer', 'Scorpio', 'Pisces', 'Gemini', 'Libra', 'Aquarius', 'Taurus', 'Virgo', 'Capricorn'];
-    const DATA_FAM = ['Want Kids', 'Don\'t Want Kids', 'Not Sure'];
+    const DATA_POLITICS = ['Liberal', 'Conservative', 'Moderate', 'Apolitical'];
+    const DATA_ZOD = ['Aries', 'Leo', 'Pisces', 'Gemini', 'Scorpio', 'Libra'];
+
+    const IMGS_F = ['https://images.unsplash.com/photo-1517841905240-472988babdf9?w=500','https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=500'];
+    const IMGS_M = ['https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500','https://images.unsplash.com/photo-1480455624313-e29b44bbfde1?w=500'];
 
     function initBackend() {
         if(!localStorage.getItem('pgX_users')) {
             let users = [];
             for(let i=0; i<25; i++) {
                 let isFem = Math.random() > 0.5;
+                let isExplicit = Math.random() < 0.2; // 20% explicit
                 users.push({
                     id: i,
-                    name: isFem ? NAMES_F[Math.floor(Math.random()*NAMES_F.length)] : NAMES_M[Math.floor(Math.random()*NAMES_M.length)],
+                    alias: ALIAS_PRE[Math.floor(Math.random()*8)] + "_" + ALIAS_SUF[Math.floor(Math.random()*8)],
                     age: Math.floor(Math.random() * 15) + 18,
                     gender: isFem ? 'Woman' : 'Man',
                     img: isFem ? IMGS_F[Math.floor(Math.random()*IMGS_F.length)] : IMGS_M[Math.floor(Math.random()*IMGS_M.length)],
                     dist: Math.floor(Math.random() * 50) + 1,
                     // New Fields
+                    isExplicit: isExplicit,
+                    relationship: DATA_REL_TYPE[Math.floor(Math.random()*DATA_REL_TYPE.length)],
                     religion: DATA_RELIGION[Math.floor(Math.random()*DATA_RELIGION.length)],
                     politics: DATA_POLITICS[Math.floor(Math.random()*DATA_POLITICS.length)],
                     pets: DATA_PETS[Math.floor(Math.random()*DATA_PETS.length)],
                     vices: DATA_VICES[Math.floor(Math.random()*DATA_VICES.length)],
-                    edu: DATA_EDU[Math.floor(Math.random()*DATA_EDU.length)],
                     zodiac: DATA_ZOD[Math.floor(Math.random()*DATA_ZOD.length)],
-                    family: DATA_FAM[Math.floor(Math.random()*DATA_FAM.length)],
                     bio: "Just here for a good time. Love travel and photography.",
                     seen: false
                 });
@@ -488,55 +495,55 @@
         renderDeck();
     }
 
-    // --- 2. RENDERING LOGIC ---
+    // --- 2. RENDER LOGIC ---
     let activeDeck = [];
-
     function renderDeck() {
-        // Load users
         let users = JSON.parse(localStorage.getItem('pgX_users'));
         let filters = JSON.parse(localStorage.getItem('pgX_filters')) || {};
+        
+        // Check "Show Explicit" toggle from Profile (simulated as false if not set)
+        let showExplicit = localStorage.getItem('pgX_explicit') === 'true';
 
-        // Apply filters
         activeDeck = users.filter(u => {
             if(u.seen) return false;
-            // Gender
+            // Filter Explicit
+            if(u.isExplicit && !showExplicit) return false;
+            
+            // Gender Filters
             if(filters.men && u.gender === 'Man') return true;
             if(filters.women && u.gender === 'Woman') return true;
-            // If no gender selected, default to all
             if(!filters.men && !filters.women) return true;
             return false;
         });
 
-        // Further filter by attributes (Advanced)
-        if(filters.religion && filters.religion.length > 0) activeDeck = activeDeck.filter(u => filters.religion.includes(u.religion));
-        if(filters.pets && filters.pets.length > 0) activeDeck = activeDeck.filter(u => filters.pets.includes(u.pets));
-        // (Can extend logic for all other filters here)
+        // Relationship Filter
+        if(filters.relType && filters.relType.length > 0) activeDeck = activeDeck.filter(u => filters.relType.includes(u.relationship));
 
         const zone = document.getElementById('swipe-zone');
         const grid = document.getElementById('grid-content');
         
-        // Render Swipe Card
+        // Render Swipe Card (ALIAS ONLY, NO GRADIENT)
         if(activeDeck.length > 0) {
             const u = activeDeck[0];
             zone.innerHTML = `
-                <div class="swipe-card" id="active-card" onclick="openUserProfile('${u.name}', ${u.age}, '${u.img}', ${u.id})">
+                <div class="swipe-card" id="active-card" onclick="openUserProfile('${u.alias}', ${u.age}, '${u.img}', ${u.id})">
                     <img src="${u.img}" alt="User">
                     <div class="card-info">
-                        <h2 class="card-title">${u.name}, ${u.age} ✓</h2>
+                        <h2 class="card-title">${u.alias}, ${u.age} ✓</h2>
                         <p class="card-dist">${u.dist} miles away</p>
-                        <p style="color:rgba(255,255,255,0.8); font-size:12px; text-shadow:0 1px 2px black;">${u.religion} • ${u.zodiac}</p>
+                        <p class="card-sub">${u.relationship} • ${u.zodiac}</p>
                     </div>
                 </div>`;
-            initSwipeHandlers(); // Re-attach listeners
+            initSwipeHandlers();
         } else {
             zone.innerHTML = `<div style="text-align:center; color:#666;"><h3>No more profiles</h3><button onclick="resetSeen()" style="background:var(--accent); border:none; padding:10px; color:white; border-radius:8px;">Reset Demo</button></div>`;
         }
 
         // Render Grid
         grid.innerHTML = activeDeck.slice(0, 6).map(u => `
-            <div class="grid-item" onclick="openUserProfile('${u.name}', ${u.age}, '${u.img}', ${u.id})">
+            <div class="grid-item" onclick="openUserProfile('${u.alias}', ${u.age}, '${u.img}', ${u.id})">
                 <img src="${u.img}" style="width:100%; height:100%; object-fit:cover;">
-                <div class="grid-overlay"><span>${u.name}</span><span>${u.age}</span></div>
+                <div class="grid-overlay"><span>${u.alias}</span><span>${u.age}</span></div>
             </div>
         `).join('');
     }
@@ -548,60 +555,50 @@
         renderDeck();
     }
 
-    // --- 3. FILTER LOGIC ---
+    // --- 3. FILTER & SWIPE LOGIC ---
     function applyFilters() {
         const filters = {
             men: document.getElementById('f-men').checked,
             women: document.getElementById('f-women').checked,
-            // Harvest checked boxes from accordions
-            religion: Array.from(document.querySelectorAll('.f-rel:checked')).map(cb => cb.value),
-            pets: Array.from(document.querySelectorAll('.f-pets:checked')).map(cb => cb.value),
-            politics: Array.from(document.querySelectorAll('.f-pol:checked')).map(cb => cb.value),
-            vices: Array.from(document.querySelectorAll('.f-vice:checked')).map(cb => cb.value),
-            edu: Array.from(document.querySelectorAll('.f-edu:checked')).map(cb => cb.value),
-            zodiac: Array.from(document.querySelectorAll('.f-zod:checked')).map(cb => cb.value),
-            family: Array.from(document.querySelectorAll('.f-fam:checked')).map(cb => cb.value)
+            relType: Array.from(document.querySelectorAll('.f-rt:checked')).map(cb => cb.value),
+            religion: Array.from(document.querySelectorAll('.f-rel:checked')).map(cb => cb.value)
         };
         localStorage.setItem('pgX_filters', JSON.stringify(filters));
         document.getElementById('filter-modal').style.display = 'none';
         renderDeck();
     }
 
-    // --- 4. SWIPE LOGIC ---
-    let card, startX, currentX, dragStartTime, btnLike, btnReject;
+    function saveProfile() {
+        // Save explicit setting
+        localStorage.setItem('pgX_explicit', document.getElementById('p-explicit').checked);
+        alert("Profile Saved!");
+        document.getElementById('profile-modal').style.display='none';
+        renderDeck(); // Re-render to apply explicit filter
+    }
 
+    // Swipe w/ Wink
+    let card, startX, currentX, dragStartTime, btnLike, btnReject;
     function initSwipeHandlers() {
         card = document.getElementById('active-card');
         if(!card) return;
         btnReject = document.getElementById('btn-reject');
         btnLike = document.getElementById('btn-like');
         
-        card.addEventListener('touchstart', (e) => { 
-            startX = e.touches[0].clientX; 
-            card.style.transition = 'none'; 
-            dragStartTime = new Date().getTime(); 
-        });
-        
+        card.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; card.style.transition = 'none'; dragStartTime = new Date().getTime(); });
         card.addEventListener('touchmove', (e) => {
             currentX = e.touches[0].clientX - startX;
             card.style.transform = `translateX(${currentX}px) rotate(${currentX/15}deg)`;
-            
-            // FADE COLORS
             if(currentX > 0) {
                 const opacity = Math.min(currentX / 100, 1);
-                btnLike.style.backgroundColor = `rgba(139, 92, 246, ${opacity})`; 
-                btnLike.style.borderColor = `rgba(139, 92, 246, 1)`;
+                btnLike.style.backgroundColor = `rgba(139, 92, 246, ${opacity})`; btnLike.style.borderColor = btnLike.style.backgroundColor;
             } else {
                 const opacity = Math.min(Math.abs(currentX) / 100, 1);
-                btnReject.style.backgroundColor = `rgba(249, 115, 22, ${opacity})`;
-                btnReject.style.borderColor = `rgba(249, 115, 22, 1)`;
+                btnReject.style.backgroundColor = `rgba(249, 115, 22, ${opacity})`; btnReject.style.borderColor = btnReject.style.backgroundColor;
             }
         });
-
         card.addEventListener('touchend', () => {
-            if (new Date().getTime() - dragStartTime < 150 && Math.abs(currentX) < 5) {
-                 // Tap detected
-            } else if (currentX > 120) userSwipe('right');
+            if (new Date().getTime() - dragStartTime < 150 && Math.abs(currentX) < 5) {} 
+            else if (currentX > 120) userSwipe('right');
             else if (currentX < -120) userSwipe('left');
             else resetCard();
         });
@@ -614,62 +611,41 @@
         card.style.opacity = '0';
         resetButtons();
         
-        // Update Local Storage
+        if(dir === 'right') alert("Wink Sent! 😉"); // WINK LOGIC
+
         if(activeDeck.length > 0) {
             let users = JSON.parse(localStorage.getItem('pgX_users'));
             let target = users.find(u => u.id === activeDeck[0].id);
             if(target) target.seen = true;
             localStorage.setItem('pgX_users', JSON.stringify(users));
         }
-
         setTimeout(() => { renderDeck(); }, 300);
     }
-
-    function resetCard() {
-        card.style.transition = 'transform 0.3s ease-out, opacity 0.3s';
-        card.style.transform = 'translateX(0)';
-        card.style.opacity = '1';
-        currentX = 0;
-        resetButtons();
-    }
     
-    function resetButtons() {
-        if(btnLike) { btnLike.style.backgroundColor = 'transparent'; btnLike.style.borderColor = '#444'; }
-        if(btnReject) { btnReject.style.backgroundColor = 'transparent'; btnReject.style.borderColor = '#444'; }
-    }
+    function resetCard() { card.style.transform = 'translateX(0)'; card.style.opacity = '1'; resetButtons(); }
+    function resetButtons() { if(btnLike) { btnLike.style.background = 'transparent'; btnLike.style.borderColor = '#444'; } if(btnReject) { btnReject.style.background = 'transparent'; btnReject.style.borderColor = '#444'; } }
 
-    // --- 5. MAP LOGIC (Precise + Draggable) ---
+    // --- 4. MAP LOGIC (High Contrast) ---
     const map = L.map('map').setView([40.7128, -74.0060], 13);
+    // Standard Dark + CSS Filter in Styles handles the "High Contrast" look
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
 
     const myIcon = L.divIcon({ className: 'my-location-pin', iconSize: [20, 20] });
     let myMarker = L.marker([40.7128, -74.0060], {icon: myIcon, draggable: true}).addTo(map);
 
-    // Get Actual Location
     if(navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(pos => {
             const {latitude, longitude} = pos.coords;
             myMarker.setLatLng([latitude, longitude]);
             map.setView([latitude, longitude], 14);
-        }, err => console.log(err));
+        });
     }
-
-    // Manual Drag Override
-    myMarker.on('dragend', function(event) {
-        const marker = event.target;
-        const position = marker.getLatLng();
-        console.log("New Location Saved:", position);
-        // Here you would save 'position' to localStorage or backend
-    });
 
     // --- UI HELPERS ---
     const userTrigger = document.getElementById('user-icon-trigger');
     const userDropdown = document.getElementById('user-dropdown');
     userTrigger.addEventListener('click', (e) => { e.stopPropagation(); userDropdown.style.display = userDropdown.style.display === 'block' ? 'none' : 'block'; });
-    document.addEventListener('click', () => { 
-        userDropdown.style.display = 'none'; 
-        document.getElementById('report-menu').style.display = 'none'; 
-    });
+    document.addEventListener('click', () => { userDropdown.style.display = 'none'; document.getElementById('report-menu').style.display = 'none'; });
     document.getElementById('open-my-profile').addEventListener('click', () => document.getElementById('profile-modal').style.display = 'block');
 
     function switchView(viewId, btn) {
@@ -680,23 +656,17 @@
         if(viewId === 'map') setTimeout(() => map.invalidateSize(), 100);
     }
 
-    function toggleAccordion(id, isChecked) {
-        document.getElementById(id).style.display = isChecked ? 'block' : 'none';
-    }
+    function toggleAccordion(id, isChecked) { document.getElementById(id).style.display = isChecked ? 'block' : 'none'; }
 
     function openUserProfile(name, age, imgUrl, id) {
-        // Find user data for chips
         let users = JSON.parse(localStorage.getItem('pgX_users'));
         let u = users.find(usr => usr.id === id);
-
-        document.getElementById('view-user-name').innerText = `${name}, ${age}`;
+        document.getElementById('view-user-name').innerText = `${name}, ${age}`; // Alias displayed
         document.getElementById('view-user-img').src = imgUrl;
         
-        // Populate Chips with new data
         if(u) {
-            const chips = document.getElementById('view-user-chips');
-            chips.innerHTML = `
-                <div class="stat-chip">${u.religion}</div>
+            document.getElementById('view-user-chips').innerHTML = `
+                <div class="stat-chip">${u.relationship}</div>
                 <div class="stat-chip">${u.politics}</div>
                 <div class="stat-chip">${u.zodiac}</div>
                 <div class="stat-chip">${u.pets} lover</div>
@@ -704,14 +674,16 @@
             `;
             document.getElementById('view-user-bio').innerText = u.bio;
         }
-
         document.getElementById('view-user-modal').style.display = 'block';
     }
 
-    function saveProfile() {
-        // In a real app, save inputs to localStorage/DB
-        alert("Profile Saved!");
-        document.getElementById('profile-modal').style.display='none';
+    // Messaging Tabs
+    function openMsgModal() { document.getElementById('msg-modal').style.display = 'block'; }
+    function openTab(tabId, btn) {
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        btn.classList.add('active');
     }
 
     function previewImg(e, id) {
@@ -730,9 +702,7 @@
     function showReportForm() { event.stopPropagation(); document.getElementById('report-form').style.display = 'block'; }
     function confirmBlockReport() { alert("Reported!"); document.getElementById('view-user-modal').style.display='none'; }
 
-    // Init App
     initBackend();
 </script>
-
 </body>
 </html>
