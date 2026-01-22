@@ -37,7 +37,6 @@
         }
         .header-icons { display: flex; gap: 20px; align-items: center; }
 
-        /* Notification Badge */
         .msg-icon-wrapper { position: relative; cursor: pointer; }
         .badge {
             position: absolute; top: -5px; right: -5px;
@@ -77,55 +76,52 @@
             display: flex; align-items: center; justify-content: center;
         }
 
-        /* --- SWIPE VIEW (Tall + Overlay) --- */
+        /* --- SWIPE VIEW (Tall + Fixed Buttons) --- */
+        #view-swipe { position: relative; height: 85vh; overflow: hidden; }
+        
         #swipe-zone {
             display: flex; justify-content: center; align-items: center;
-            height: 78vh; /* Taller */
-            position: relative; perspective: 1000px; margin-top: 5px;
+            height: 100%; position: relative; perspective: 1000px;
         }
         .swipe-card {
-            width: 95%; max-width: 400px; height: 100%; 
+            width: 95%; max-width: 400px; height: 90%; 
             background: var(--card-dark); border-radius: 24px;
-            border: 1px solid #333; position: absolute;
+            border: 1px solid #333; position: absolute; top: 10px;
             cursor: grab; touch-action: none; user-select: none;
-            overflow: hidden; transition: transform 0.1s ease-out;
+            overflow: hidden; transition: transform 0.1s ease-out; z-index: 10;
         }
         .swipe-card img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
         
-        .card-info {
-            position: absolute; bottom: 0; width: 100%; padding: 25px 25px 100px 25px; /* Extra padding bottom for buttons */
-            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); /* Subtle gradient for text visibility */
-            pointer-events: none;
+        /* Top Overlay Text */
+        .card-header-overlay {
+            position: absolute; top: 0; width: 100%; padding: 20px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent);
+            display: flex; justify-content: space-between; pointer-events: none;
         }
-        .card-title { 
-            margin: 0; color: var(--accent); font-size: 28px; font-weight: 700; 
-            text-shadow: 0 2px 4px rgba(0,0,0,1);
-        }
-        .card-sub {
-            color: white; font-size: 14px; margin-top: 5px; font-weight: 600;
-            text-shadow: 0 2px 4px rgba(0,0,0,1);
-        }
+        .card-alias { color: var(--accent); font-size: 24px; font-weight: 700; text-shadow: 0 2px 4px black; }
+        .card-age { color: white; font-size: 24px; font-weight: 700; text-shadow: 0 2px 4px black; }
 
-        /* Overlay Buttons */
-        .action-btns-overlay {
-            position: absolute; bottom: 25px; width: 100%;
-            display: flex; justify-content: space-evenly; align-items: center; z-index: 20;
+        /* Fixed Action Buttons (Outside Card) */
+        .fixed-actions {
+            position: absolute; bottom: 30px; left: 0; width: 100%;
+            display: flex; justify-content: space-evenly; align-items: center; 
+            z-index: 20; pointer-events: none; /* Let clicks pass through empty space */
         }
         .swipe-btn {
-            width: 60px; height: 60px; border-radius: 50%; 
-            background: rgba(0,0,0,0.5); border: 2px solid white; 
+            width: 65px; height: 65px; border-radius: 50%; 
+            background: rgba(0,0,0,0.6); border: 2px solid white; 
             color: white; font-size: 24px; transition: 0.2s; backdrop-filter: blur(5px);
             display: flex; align-items: center; justify-content: center; cursor: pointer;
+            pointer-events: auto; /* Re-enable clicks */
         }
         
-        /* Wink Feedback Text */
         .wink-feedback {
-            position: absolute; bottom: 80px; right: 20%;
+            position: absolute; bottom: 85px; right: 18%;
             color: var(--accent); font-weight: bold; font-size: 14px;
             background: rgba(0,0,0,0.8); padding: 5px 10px; border-radius: 12px;
             opacity: 0; transition: opacity 0.5s, transform 0.5s; pointer-events: none;
         }
-        .wink-feedback.show { opacity: 1; transform: translateY(-20px); }
+        .wink-feedback.show { opacity: 1; transform: translateY(-10px); }
 
         /* --- GRID VIEW --- */
         .grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
@@ -137,9 +133,27 @@
             color: var(--accent); font-size: 12px; font-weight: bold;
         }
 
-        /* --- MAP VIEW (Light/Readable) --- */
-        #map { width: 100%; height: 78vh; border-radius: 20px; border: 1px solid #333; }
-        /* No filter applied here for max visibility */
+        /* --- MAP VIEW (Dark + High Vis) --- */
+        #map { 
+            width: 100%; height: 78vh; border-radius: 20px; border: 1px solid #333; 
+            filter: brightness(1.3) contrast(1.2); /* Pop the text/roads */
+        }
+        
+        /* My Marker: Hollow Purple */
+        .my-location-pin {
+            background: transparent;
+            border: 3px solid var(--accent);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--accent-glow);
+            cursor: move;
+        }
+        /* User Marker: Solid Purple Dot */
+        .user-dot-pin {
+            background: var(--accent);
+            border: 2px solid white;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px black;
+        }
 
         .app-view { display: none; padding: 0 15px 20px 15px; }
         .app-view.active { display: block; }
@@ -153,12 +167,10 @@
             padding: 20px; border-bottom: 1px solid #222; display: flex; 
             justify-content: space-between; align-items: center; position: sticky; top: 0; background: #000; z-index: 10;
         }
-        
-        /* Purple Back Arrow */
         .back-arrow-btn { background: none; border: none; cursor: pointer; padding: 5px; }
         .back-arrow-btn svg { stroke: var(--accent); width: 28px; height: 28px; }
 
-        /* --- MESSAGING & CHAT --- */
+        /* --- MESSAGING --- */
         .tab-group { display: flex; width: 100%; border-bottom: 1px solid #333; }
         .tab-btn { flex: 1; background: none; border: none; padding: 15px; color: #888; font-weight: bold; cursor: pointer; border-bottom: 2px solid transparent; }
         .tab-btn.active { color: var(--accent); border-bottom: 2px solid var(--accent); }
@@ -168,7 +180,6 @@
         .msg-item { display: flex; gap: 15px; padding: 15px; background: #111; border-radius: 12px; align-items: center; border: 1px solid #222; margin-bottom: 10px; cursor: pointer; }
         .msg-avatar { width: 50px; height: 50px; border-radius: 50%; background: #333; overflow: hidden; object-fit: cover; }
         
-        /* Chat View Interface */
         #chat-view { display: none; height: calc(100% - 60px); display: flex; flex-direction: column; }
         #chat-body { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
         .chat-bubble { padding: 10px 15px; border-radius: 18px; max-width: 80%; font-size: 14px; line-height: 1.4; }
@@ -185,6 +196,7 @@
         .gallery-grid { display: flex; justify-content: space-between; gap: 4px; margin-bottom: 20px; width: 100%; }
         .gallery-slot { width: 19%; aspect-ratio: 1/1; background: #111; border: 1px dashed #444; border-radius: 8px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
         .gallery-slot label { color: var(--accent); font-size: 20px; cursor: pointer; width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
+        .gallery-slot img { width: 100%; height: 100%; object-fit: cover; }
         .gallery-slot video { width: 100%; height: 100%; object-fit: cover; }
 
         /* --- ACCORDIONS --- */
@@ -199,6 +211,11 @@
         .radio-option input { margin-right: 10px; accent-color: var(--accent); }
         .style-input { width: 100%; background: #000; border: 1px solid #333; color: white; padding: 12px; border-radius: 10px; }
         .filter-label { color:#888; font-size:11px; font-weight:bold; margin-bottom: 5px; display: block; margin-top: 15px;}
+        
+        /* Dropdown Menu (Report/Block) */
+        .dropdown-menu { display: none; position: absolute; top: 60px; right: 20px; background: #222; border: 1px solid #444; border-radius: 8px; z-index: 8000; padding: 10px; width: 160px; }
+        .dropdown-item { display: block; width: 100%; padding: 10px; color: white; text-align: left; background: none; border: none; border-bottom: 1px solid #333; }
+        .dropdown-item:last-child { border: none; }
     </style>
 </head>
 <body>
@@ -235,6 +252,13 @@
 </div>
 <div id="view-swipe" class="app-view active">
     <div id="swipe-zone"></div>
+    <div class="fixed-actions">
+        <button id="btn-reject" class="swipe-btn" onclick="userSwipe('left')">✘</button>
+        <div style="position:relative">
+            <span class="wink-feedback" id="wink-txt">Wink sent!</span>
+            <button id="btn-like" class="swipe-btn" style="border-color:var(--accent);color:var(--accent)" onclick="userSwipe('right')">✔</button>
+        </div>
+    </div>
 </div>
 
 <div id="view-grid" class="app-view">
@@ -266,7 +290,7 @@
         </div>
 
         <div class="gallery-grid">
-            <div class="gallery-slot"><input type="file" id="g1" hidden><label for="g1">+</label></div>
+            <div class="gallery-slot" style="border-color:var(--accent)"><label>★</label></div>
             <div class="gallery-slot"><input type="file" id="g2" hidden><label for="g2">+</label></div>
             <div class="gallery-slot"><input type="file" id="g3" hidden><label for="g3">+</label></div>
             <div class="gallery-slot"><input type="file" id="g4" hidden><label for="g4">+</label></div>
@@ -283,10 +307,7 @@
             <div class="toggle-row"><span>Show Explicit Content</span><input type="checkbox" id="p-explicit" class="toggle-checkbox"><label for="p-explicit" class="toggle-switch"></label></div>
 
             <div class="toggle-row"><span>Use GPS Location</span><input type="checkbox" id="p-use-gps" class="toggle-checkbox" checked onchange="toggleAccordion('loc-manual', !this.checked)"><label for="p-use-gps" class="toggle-switch"></label></div>
-            <div id="loc-manual" class="accordion-content">
-                <label class="filter-label" style="margin-top:0;">MANUAL CITY/ZIP</label>
-                <input type="text" class="style-input" placeholder="Enter City...">
-            </div>
+            <div id="loc-manual" class="accordion-content"><input type="text" class="style-input" placeholder="Enter City..."></div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                 <div><label class="filter-label">GENDER</label><select id="p-gender" class="style-input"><option>Man</option><option>Woman</option><option>Transgender</option><option>Non-Binary</option><option>Couple</option></select></div>
@@ -295,7 +316,7 @@
             
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                 <div><label class="filter-label">BODY TYPE</label><select id="p-body" class="style-input"><option>Average</option><option>Athletic</option><option>Curvy</option><option>Slim</option><option>Muscular</option></select></div>
-                <div><label class="filter-label">HEIGHT (cm)</label><input type="number" id="p-height" class="style-input" placeholder="175"></div>
+                <div><label class="filter-label">HEIGHT</label><div style="display:flex; gap:5px;"><input type="number" class="style-input" placeholder="Ft"><input type="number" class="style-input" placeholder="In"></div></div>
             </div>
             
             <div><label class="filter-label">RELATIONSHIP TYPE</label><select id="p-rel-type" class="style-input"><option>Marriage</option><option>Long-Term</option><option>Short-Term</option><option>Intimacy w/o Connection</option><option>Friends</option><option>FWB</option></select></div>
@@ -320,10 +341,13 @@
         
         <label class="filter-label">I'M LOOKING FOR</label>
         <div class="toggle-row"><span>Men</span><input type="checkbox" id="f-men" class="toggle-checkbox" onchange="toggleAccordion('men-age', this.checked)"><label for="f-men" class="toggle-switch"></label></div>
-        <div id="men-age" class="accordion-content"><div style="display:flex; gap:10px;"><input type="number" id="f-men-min" placeholder="18" class="style-input"><input type="number" id="f-men-max" placeholder="99" class="style-input"></div></div>
+        <div id="men-age" class="accordion-content"><div style="display:flex; gap:10px;"><input type="number" placeholder="18" class="style-input"><input type="number" placeholder="99" class="style-input"></div></div>
 
         <div class="toggle-row"><span>Women</span><input type="checkbox" id="f-women" class="toggle-checkbox" onchange="toggleAccordion('women-age', this.checked)"><label for="f-women" class="toggle-switch"></label></div>
-        <div id="women-age" class="accordion-content"><div style="display:flex; gap:10px;"><input type="number" id="f-women-min" placeholder="18" class="style-input"><input type="number" id="f-women-max" placeholder="99" class="style-input"></div></div>
+        <div id="women-age" class="accordion-content"><div style="display:flex; gap:10px;"><input type="number" placeholder="18" class="style-input"><input type="number" placeholder="99" class="style-input"></div></div>
+
+        <div class="toggle-row"><span>Transgender</span><input type="checkbox" id="f-trans" class="toggle-checkbox" onchange="toggleAccordion('trans-age', this.checked)"><label for="f-trans" class="toggle-switch"></label></div>
+        <div id="trans-age" class="accordion-content"><div style="display:flex; gap:10px;"><input type="number" placeholder="18" class="style-input"><input type="number" placeholder="99" class="style-input"></div></div>
 
         <label class="filter-label">DISTANCE: <span id="dist-val" style="color:var(--accent)">50 mi</span></label>
         <input type="range" min="1" max="200" value="50" oninput="document.getElementById('dist-val').innerText = this.value + ' mi'" style="accent-color: var(--accent); width: 100%;">
@@ -334,7 +358,7 @@
 
         <label class="filter-label">RELIGION</label>
         <div class="toggle-row"><span>Select Religion</span><input type="checkbox" id="t-rel" class="toggle-checkbox" onchange="toggleAccordion('ac-rel', this.checked)"><label for="t-rel" class="toggle-switch"></label></div>
-        <div id="ac-rel" class="accordion-content"><label class="radio-option"><input type="checkbox" class="f-rel" value="Christian"> Christian</label><label class="radio-option"><input type="checkbox" class="f-rel" value="Muslim"> Muslim</label><label class="radio-option"><input type="checkbox" class="f-rel" value="Spiritual"> Spiritual</label></div>
+        <div id="ac-rel" class="accordion-content"><label class="radio-option"><input type="checkbox" class="f-rel" value="Christian"> Christian</label><label class="radio-option"><input type="checkbox" class="f-rel" value="Muslim"> Muslim</label></div>
 
         <label class="filter-label">PETS</label>
         <div class="toggle-row"><span>Select Pets</span><input type="checkbox" id="t-pets" class="toggle-checkbox" onchange="toggleAccordion('ac-pets', this.checked)"><label for="t-pets" class="toggle-switch"></label></div>
@@ -343,6 +367,22 @@
         <label class="filter-label">VICES</label>
         <div class="toggle-row"><span>Select Vices</span><input type="checkbox" id="t-vice" class="toggle-checkbox" onchange="toggleAccordion('ac-vice', this.checked)"><label for="t-vice" class="toggle-switch"></label></div>
         <div id="ac-vice" class="accordion-content"><label class="radio-option"><input type="checkbox" class="f-vice" value="Smoker"> Smoker</label><label class="radio-option"><input type="checkbox" class="f-vice" value="420 Friendly"> 420 Friendly</label></div>
+
+        <label class="filter-label">POLITICS</label>
+        <div class="toggle-row"><span>Select Politics</span><input type="checkbox" id="t-pol" class="toggle-checkbox" onchange="toggleAccordion('ac-pol', this.checked)"><label for="t-pol" class="toggle-switch"></label></div>
+        <div id="ac-pol" class="accordion-content"><label class="radio-option"><input type="checkbox" class="f-pol" value="Liberal"> Liberal</label><label class="radio-option"><input type="checkbox" class="f-pol" value="Conservative"> Conservative</label></div>
+
+        <label class="filter-label">EDUCATION</label>
+        <div class="toggle-row"><span>Select Education</span><input type="checkbox" id="t-edu" class="toggle-checkbox" onchange="toggleAccordion('ac-edu', this.checked)"><label for="t-edu" class="toggle-switch"></label></div>
+        <div id="ac-edu" class="accordion-content"><label class="radio-option"><input type="checkbox" class="f-edu" value="Undergrad"> Undergrad</label></div>
+
+        <label class="filter-label">ZODIAC</label>
+        <div class="toggle-row"><span>Select Zodiac</span><input type="checkbox" id="t-zod" class="toggle-checkbox" onchange="toggleAccordion('ac-zod', this.checked)"><label for="t-zod" class="toggle-switch"></label></div>
+        <div id="ac-zod" class="accordion-content"><label class="radio-option"><input type="checkbox" class="f-zod" value="Aries"> Aries</label><label class="radio-option"><input type="checkbox" class="f-zod" value="Leo"> Leo</label></div>
+
+        <label class="filter-label">FAMILY PLANS</label>
+        <div class="toggle-row"><span>Select Plans</span><input type="checkbox" id="t-fam" class="toggle-checkbox" onchange="toggleAccordion('ac-fam', this.checked)"><label for="t-fam" class="toggle-switch"></label></div>
+        <div id="ac-fam" class="accordion-content"><label class="radio-option"><input type="checkbox" class="f-fam" value="Want Kids"> Want Kids</label></div>
 
         <button onclick="applyFilters()" style="width:100%; background: var(--accent); padding: 15px; border-radius: 12px; border:none; color:white; font-weight:bold; margin-top: 20px;">Apply Filters</button>
         <div style="height: 50px;"></div> 
@@ -354,11 +394,12 @@
             <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
         </button>
         <h2 style="font-size: 18px; margin: 0; color: white;">User Profile</h2>
-        <button onclick="document.getElementById('report-menu').style.display='block'" style="background: none; border: none; color: var(--warning); font-size: 24px; font-weight: bold;">✕</button>
-        
-        <div id="report-menu" class="report-menu">
-            <button onclick="alert('Blocked!');document.getElementById('view-user-modal').style.display='none'" style="width: 100%; padding: 12px; background: #222; border: 1px solid #333; color: white; border-radius: 8px; margin-bottom: 10px; text-align: left;">🚫 Block User</button>
-            <button onclick="alert('Reported!');document.getElementById('view-user-modal').style.display='none'" style="width: 100%; padding: 12px; background: #222; border: 1px solid #333; color: white; border-radius: 8px; text-align: left;">⚠️ Report User</button>
+        <div style="position:relative;">
+            <button onclick="toggleReportMenu()" style="background: none; border: none; color: var(--warning); font-size: 24px; font-weight: bold;">✕</button>
+            <div id="report-menu" class="dropdown-menu">
+                <button onclick="alert('Blocked!');" class="dropdown-item">🚫 Block User</button>
+                <button onclick="alert('Reported!');" class="dropdown-item">⚠️ Report User</button>
+            </div>
         </div>
     </div>
     
@@ -367,6 +408,14 @@
             <img id="view-user-img" src="" style="width: 100%; height: 100%; object-fit: cover;">
         </div>
 
+        <div class="gallery-grid">
+            <div class="gallery-slot" style="border-color:var(--accent);"><img id="view-user-img-small" src="" style="width:100%;height:100%;object-fit:cover;"></div>
+            <div class="gallery-slot" style="background: #222;"></div>
+            <div class="gallery-slot" style="background: #222;"></div>
+            <div class="gallery-slot" style="background: #222;"></div>
+            <div class="gallery-slot" style="background: #222; border-color: var(--accent);">▶</div>
+        </div>
+        
         <h1 id="view-user-name" style="margin: 0; font-size: 28px; color: var(--accent);">Alias</h1>
         <p style="color: #666; font-size: 13px; font-weight: bold; margin-bottom: 15px;">Verified Member ✓</p>
 
@@ -389,10 +438,7 @@
             <button class="tab-btn active" onclick="openTab('tab-winks', this)">Winks 😉</button>
             <button class="tab-btn" onclick="openTab('tab-chats', this)">Messages 💬</button>
         </div>
-
-        <div id="tab-winks" class="tab-pane active">
-            </div>
-
+        <div id="tab-winks" class="tab-pane active"></div>
         <div id="tab-chats" class="tab-pane">
             <div class="msg-item" onclick="openChat('Jess_Vibes')">
                 <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100" class="msg-avatar">
@@ -401,7 +447,7 @@
         </div>
     </div>
 
-    <div id="chat-view" style="display:none;">
+    <div id="chat-view">
         <div style="padding:10px; background:#111; border-bottom:1px solid #333; display:flex; align-items:center; gap:10px;">
             <div style="width:30px; height:30px; background:#444; border-radius:50%;"></div>
             <span style="font-weight:bold; color:white;" id="chat-target-name">User</span>
@@ -411,7 +457,6 @@
             <div class="chat-bubble me">I'm good! Just swiping around.</div>
         </div>
         <div class="chat-input-area">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
             <input type="text" class="chat-input" placeholder="Type a message...">
             <button style="background:var(--accent); color:white; border:none; padding:8px 15px; border-radius:15px;">Send</button>
         </div>
@@ -419,21 +464,18 @@
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
 <script>
-    // --- 1. MOCK DATA & LOCAL STORAGE ---
+    // --- MOCK DATA ---
     const ALIAS_PRE = ['Jay', 'Cool', 'Wild', 'Soft', 'Dark', 'Light', 'Neo', 'Retro'];
     const ALIAS_SUF = ['Rocker', 'Vibes', 'Soul', 'King', 'Queen', 'X', '99', 'Walker'];
     const IMGS_F = ['https://images.unsplash.com/photo-1517841905240-472988babdf9?w=500','https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=500'];
     const IMGS_M = ['https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500','https://images.unsplash.com/photo-1480455624313-e29b44bbfde1?w=500'];
-    
-    // Arrays for generating user data... (Simplified for brevity, assumes standard arrays exist)
     const DATA_REL_TYPE = ['Marriage', 'Long-Term', 'Short-Term', 'Intimacy w/o Connection', 'Friends', 'FWB'];
 
     function initBackend() {
         if(!localStorage.getItem('pgX_users')) {
             let users = [];
-            for(let i=0; i<25; i++) {
+            for(let i=0; i<30; i++) {
                 let isFem = Math.random() > 0.5;
                 let isExplicit = Math.random() < 0.2;
                 users.push({
@@ -442,12 +484,13 @@
                     age: Math.floor(Math.random() * 15) + 18,
                     gender: isFem ? 'Woman' : 'Man',
                     img: isFem ? IMGS_F[Math.floor(Math.random()*IMGS_F.length)] : IMGS_M[Math.floor(Math.random()*IMGS_M.length)],
-                    dist: Math.floor(Math.random() * 50) + 1,
+                    lat: 40.7128 + (Math.random() - 0.5) * 0.05,
+                    lng: -74.0060 + (Math.random() - 0.5) * 0.05,
                     isExplicit: isExplicit,
                     relationship: DATA_REL_TYPE[Math.floor(Math.random()*DATA_REL_TYPE.length)],
                     bio: "Just here for a good time. Love travel and photography.",
                     seen: false,
-                    winkedAtMe: Math.random() < 0.3 // 30% chance they winked at you
+                    winkedAtMe: Math.random() < 0.2
                 });
             }
             localStorage.setItem('pgX_users', JSON.stringify(users));
@@ -455,10 +498,30 @@
         updateBadge();
         renderDeck();
         loadWinks();
+        setInterval(simulateRealTime, 5000); // Check every 5s
     }
 
-    // --- 2. RENDER LOGIC ---
+    function simulateRealTime() {
+        let users = JSON.parse(localStorage.getItem('pgX_users'));
+        let chance = Math.random();
+        if(chance < 0.3) { // 30% chance of new notification
+            let target = users[Math.floor(Math.random()*users.length)];
+            if(!target.winkedAtMe) {
+                target.winkedAtMe = true;
+                localStorage.setItem('pgX_users', JSON.stringify(users));
+                // Play Sound
+                let audio = new Audio('https://codeskulptor-demos.commondatastorage.googleapis.com/pang/pop.mp3'); 
+                audio.volume = 0.5; audio.play().catch(e=>{});
+                updateBadge();
+                loadWinks();
+            }
+        }
+    }
+
+    // --- SWIPE LOGIC ---
     let activeDeck = [];
+    let card, startX, currentX, btnLike, btnReject;
+
     function renderDeck() {
         let users = JSON.parse(localStorage.getItem('pgX_users'));
         let filters = JSON.parse(localStorage.getItem('pgX_filters')) || {};
@@ -476,27 +539,20 @@
         const zone = document.getElementById('swipe-zone');
         const grid = document.getElementById('grid-content');
         
-        // TALL CARD + OVERLAY BUTTONS + SMALL WINK TEXT
+        // CARD: ALIAS(TL) AGE(TR)
         if(activeDeck.length > 0) {
             const u = activeDeck[0];
             zone.innerHTML = `
                 <div class="swipe-card" id="active-card">
                     <img src="${u.img}" alt="User">
-                    <div class="card-info">
-                        <h2 class="card-title">${u.alias}, ${u.age} ✓</h2>
-                        <p class="card-sub">${u.dist} miles • ${u.relationship}</p>
-                    </div>
-                    <div class="action-btns-overlay">
-                        <button id="btn-reject" class="swipe-btn" onclick="userSwipe('left')">✘</button>
-                        <div style="position:relative">
-                            <span class="wink-feedback" id="wink-txt">Wink sent!</span>
-                            <button id="btn-like" class="swipe-btn" style="border-color:var(--accent);color:var(--accent)" onclick="userSwipe('right')">✔</button>
-                        </div>
+                    <div class="card-header-overlay">
+                        <span class="card-alias">${u.alias}</span>
+                        <span class="card-age">${u.age}</span>
                     </div>
                 </div>`;
             initSwipeHandlers();
         } else {
-            zone.innerHTML = `<div style="text-align:center; color:#666; margin-top:50px;"><h3>No more profiles</h3><button onclick="resetSeen()" style="padding:10px;">Reset Demo</button></div>`;
+            zone.innerHTML = `<div style="text-align:center;color:#666;margin-top:100px;"><h3>No more profiles</h3><button onclick="resetSeen()">Reset Demo</button></div>`;
         }
 
         // GRID
@@ -508,28 +564,23 @@
         `).join('');
     }
 
-    function resetSeen() {
-        let users = JSON.parse(localStorage.getItem('pgX_users'));
-        users.forEach(u => u.seen = false);
-        localStorage.setItem('pgX_users', JSON.stringify(users));
-        renderDeck();
-    }
-
-    // --- 3. SWIPE & WINK ---
-    let card, startX, currentX;
     function initSwipeHandlers() {
         card = document.getElementById('active-card');
-        if(!card) return;
+        btnReject = document.getElementById('btn-reject');
+        btnLike = document.getElementById('btn-like');
         
         card.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; card.style.transition = 'none'; });
         card.addEventListener('touchmove', (e) => {
             currentX = e.touches[0].clientX - startX;
             card.style.transform = `translateX(${currentX}px) rotate(${currentX/15}deg)`;
+            // Animate Buttons
+            if(currentX > 0) { btnLike.style.background = 'var(--accent)'; } 
+            else { btnReject.style.background = 'var(--warning)'; }
         });
         card.addEventListener('touchend', () => {
             if (currentX > 100) userSwipe('right');
             else if (currentX < -100) userSwipe('left');
-            else { card.style.transform = 'translateX(0)'; }
+            else { card.style.transform = 'translateX(0)'; resetButtons(); }
         });
     }
 
@@ -538,11 +589,7 @@
         card.style.transition = 'transform 0.5s ease-in';
         card.style.transform = `translateX(${dir === 'right' ? 1000 : -1000}px)`;
         
-        // WINK FEEDBACK
-        if(dir === 'right') {
-            const fb = document.getElementById('wink-txt');
-            fb.classList.add('show');
-        }
+        if(dir === 'right') { document.getElementById('wink-txt').classList.add('show'); setTimeout(()=>document.getElementById('wink-txt').classList.remove('show'), 1500); }
 
         if(activeDeck.length > 0) {
             let users = JSON.parse(localStorage.getItem('pgX_users'));
@@ -550,18 +597,41 @@
             if(target) target.seen = true;
             localStorage.setItem('pgX_users', JSON.stringify(users));
         }
-        setTimeout(() => { renderDeck(); }, 400);
+        setTimeout(() => { resetButtons(); renderDeck(); }, 300);
+    }
+    function resetButtons() { btnLike.style.background = 'rgba(0,0,0,0.6)'; btnReject.style.background = 'rgba(0,0,0,0.6)'; }
+    function resetSeen() { let users = JSON.parse(localStorage.getItem('pgX_users')); users.forEach(u=>u.seen=false); localStorage.setItem('pgX_users', JSON.stringify(users)); renderDeck(); }
+
+    // --- MAP (Dark + Filters + Markers) ---
+    const map = L.map('map').setView([40.7128, -74.0060], 13);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+    
+    // My Pin
+    const myIcon = L.divIcon({ className: 'my-location-pin', iconSize: [20, 20] });
+    let myMarker = L.marker([40.7128, -74.0060], {icon: myIcon, draggable: true}).addTo(map);
+
+    // User Pins
+    let users = JSON.parse(localStorage.getItem('pgX_users')) || [];
+    users.forEach(u => {
+        let uIcon = L.divIcon({ className: 'user-dot-pin', iconSize: [12, 12] });
+        L.marker([u.lat, u.lng], {icon: uIcon}).addTo(map).on('click', ()=>openUserProfile(u.alias, u.age, u.img, u.id));
+    });
+
+    if(navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(pos => {
+            const {latitude, longitude} = pos.coords;
+            myMarker.setLatLng([latitude, longitude]);
+            map.setView([latitude, longitude], 14);
+        });
     }
 
-    // --- 4. MESSAGING & BADGE ---
+    // --- UI FUNCTIONS ---
     function updateBadge() {
         let users = JSON.parse(localStorage.getItem('pgX_users'));
-        let winks = users.filter(u => u.winkedAtMe).length;
-        let badge = document.getElementById('msg-badge');
-        badge.innerText = winks;
-        badge.style.display = winks > 0 ? 'flex' : 'none';
+        let c = users.filter(u => u.winkedAtMe).length;
+        document.getElementById('msg-badge').innerText = c;
+        document.getElementById('msg-badge').style.display = c > 0 ? 'flex' : 'none';
     }
-
     function loadWinks() {
         let users = JSON.parse(localStorage.getItem('pgX_users'));
         let winks = users.filter(u => u.winkedAtMe);
@@ -572,60 +642,26 @@
             </div>
         `).join('');
     }
-
-    function openMsgModal() { document.getElementById('msg-modal').style.display = 'block'; }
     
-    // CHAT SYSTEM
-    function openChat(name) {
-        document.getElementById('msg-list-view').style.display = 'none';
-        document.getElementById('chat-view').style.display = 'flex';
-        document.getElementById('chat-target-name').innerText = name;
-    }
-    function closeChat() {
-        if(document.getElementById('chat-view').style.display === 'flex') {
-            document.getElementById('chat-view').style.display = 'none';
-            document.getElementById('msg-list-view').style.display = 'block';
-        } else {
-            document.getElementById('msg-modal').style.display = 'none';
+    function openUserProfile(alias, age, imgUrl, id) {
+        let users = JSON.parse(localStorage.getItem('pgX_users'));
+        let u = users.find(usr => usr.id === id);
+        document.getElementById('view-user-name').innerText = alias;
+        document.getElementById('view-user-img').src = imgUrl;
+        document.getElementById('view-user-img-small').src = imgUrl; // Slot 1 logic
+        if(u) {
+            document.getElementById('view-user-chips').innerHTML = `<div class="stat-chip">${u.relationship}</div><div class="stat-chip love">❤️ Physical Touch</div>`;
+            document.getElementById('view-user-bio').innerText = u.bio;
         }
-    }
-    function openTab(tabId, btn) {
-        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(tabId).classList.add('active');
-        btn.classList.add('active');
+        document.getElementById('view-user-modal').style.display = 'block';
     }
 
-    // --- 5. MAP LOGIC (CartoDB Voyager - Light Mode) ---
-    const map = L.map('map').setView([40.7128, -74.0060], 13);
-    // Light Mode Map for visibility
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(map);
-    const myIcon = L.divIcon({ className: 'my-location-pin', iconSize: [20, 20] });
-    let myMarker = L.marker([40.7128, -74.0060], {icon: myIcon, draggable: true}).addTo(map);
-
-    if(navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(pos => {
-            const {latitude, longitude} = pos.coords;
-            myMarker.setLatLng([latitude, longitude]);
-            map.setView([latitude, longitude], 14);
-        });
+    function openChat(name) { document.getElementById('msg-list-view').style.display='none'; document.getElementById('chat-view').style.display='flex'; document.getElementById('chat-target-name').innerText = name; }
+    function closeChat() { 
+        if(document.getElementById('chat-view').style.display==='flex') { document.getElementById('chat-view').style.display='none'; document.getElementById('msg-list-view').style.display='block'; } 
+        else { document.getElementById('msg-modal').style.display='none'; } 
     }
-
-    // --- UI HELPERS ---
-    const userTrigger = document.getElementById('user-icon-trigger');
-    const userDropdown = document.getElementById('user-dropdown');
-    userTrigger.addEventListener('click', (e) => { e.stopPropagation(); userDropdown.style.display = userDropdown.style.display === 'block' ? 'none' : 'block'; });
-    document.addEventListener('click', () => { userDropdown.style.display = 'none'; });
-    document.getElementById('open-my-profile').addEventListener('click', () => document.getElementById('profile-modal').style.display = 'block');
-
-    function switchView(viewId, btn) {
-        document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active'));
-        document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('view-' + viewId).classList.add('active');
-        btn.classList.add('active');
-        if(viewId === 'map') setTimeout(() => map.invalidateSize(), 100);
-    }
-
+    function toggleReportMenu() { let m = document.getElementById('report-menu'); m.style.display = m.style.display==='block'?'none':'block'; }
     function toggleAccordion(id, isChecked) { document.getElementById(id).style.display = isChecked ? 'block' : 'none'; }
     function applyFilters() { 
         const filters = { men: document.getElementById('f-men').checked, women: document.getElementById('f-women').checked };
@@ -638,34 +674,24 @@
         document.getElementById('profile-modal').style.display='none';
         renderDeck();
     }
-
-    function openUserProfile(alias, age, imgUrl, id) {
-        document.getElementById('view-user-name').innerText = `${alias}`;
-        document.getElementById('view-user-img').src = imgUrl;
-        document.getElementById('view-user-modal').style.display = 'block';
+    function switchView(viewId, btn) {
+        document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active'));
+        document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('view-' + viewId).classList.add('active');
+        btn.classList.add('active');
+        if(viewId === 'map') setTimeout(() => map.invalidateSize(), 100);
     }
-
-    function previewImg(e, id) {
-        const r = new FileReader();
-        r.onload = function() { document.getElementById(id).src = r.result; }
-        r.readAsDataURL(e.target.files[0]);
+    function openTab(tabId, btn) {
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        btn.classList.add('active');
     }
-    function previewVideo(e) {
-        const v = document.getElementById('vid-preview');
-        v.src = URL.createObjectURL(e.target.files[0]);
-        v.style.display = 'block'; 
-        v.previousElementSibling.style.display='none';
-    }
+    function previewImg(e, id) { const r = new FileReader(); r.onload = function() { document.getElementById(id).src = r.result; }; r.readAsDataURL(e.target.files[0]); }
+    function previewVideo(e) { const v = document.getElementById('vid-preview'); v.src = URL.createObjectURL(e.target.files[0]); v.style.display = 'block'; v.previousElementSibling.style.display='none'; }
+    document.addEventListener('click', (e) => { if(!e.target.closest('#report-menu') && !e.target.closest('button[onclick="toggleReportMenu()"]')) document.getElementById('report-menu').style.display='none'; });
 
     initBackend();
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-    
