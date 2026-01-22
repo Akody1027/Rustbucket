@@ -68,10 +68,11 @@
         /* --- SWIPE VIEW --- */
         #swipe-zone {
             display: flex; justify-content: center; align-items: center;
-            height: 58vh; position: relative; perspective: 1000px; margin-top: 10px;
+            height: 65vh; /* Increased height */
+            position: relative; perspective: 1000px; margin-top: 10px;
         }
         .swipe-card {
-            width: 90%; max-width: 360px; height: 100%;
+            width: 95%; max-width: 400px; height: 100%; /* Increased size */
             background: var(--card-dark); border-radius: 24px;
             border: 1px solid #333; position: absolute;
             cursor: grab; touch-action: none; user-select: none;
@@ -82,7 +83,6 @@
             position: absolute; bottom: 0; width: 100%; padding: 25px;
             background: linear-gradient(to top, rgba(0,0,0,1), transparent);
         }
-        /* PURPLE TEXT */
         .card-title { margin: 0; color: var(--accent); font-size: 24px; font-weight: 700; }
 
         .action-btns {
@@ -91,8 +91,11 @@
         .swipe-btn {
             width: 65px; height: 65px; border-radius: 50%; 
             background: transparent; border: 2px solid #444; 
-            color: white; font-size: 22px; transition: background 0.2s;
+            color: white; font-size: 22px; transition: background 0.1s, border-color 0.1s;
         }
+        /* Active states for drag feedback */
+        .swipe-btn.reject-active { background: var(--warning) !important; border-color: var(--warning) !important; }
+        .swipe-btn.like-active { background: var(--accent) !important; border-color: var(--accent) !important; }
 
         /* --- GRID VIEW --- */
         .grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
@@ -101,35 +104,44 @@
             position: absolute; bottom: 0; width: 100%; padding: 8px 5px;
             background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
             display: flex; justify-content: space-between;
-            color: var(--accent); font-size: 12px; font-weight: bold; /* Purple Text */
+            color: var(--accent); font-size: 12px; font-weight: bold;
         }
 
         /* --- MAP VIEW --- */
         #map { width: 100%; height: 68vh; border-radius: 20px; border: 1px solid #333; }
+        
+        /* HOLLOW PURPLE MARKER */
+        .my-location-pin {
+            background: transparent;
+            border: 3px solid var(--accent);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
         .app-view { display: none; padding: 0 15px 20px 15px; }
         .app-view.active { display: block; }
 
         /* --- MODALS --- */
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; z-index: 6000; overflow-y: auto; padding-bottom: 80px; /* Space for sticky bar */
+            background: #000; z-index: 6000; overflow-y: auto; padding-bottom: 80px;
         }
         .modal-header {
             padding: 20px; border-bottom: 1px solid #222; display: flex; 
             justify-content: space-between; align-items: center; position: sticky; top: 0; background: #000; z-index: 10;
         }
 
-        /* --- GALLERY --- */
+        /* --- GALLERY (5 SLOTS) --- */
         .gallery-grid {
-            display: flex; justify-content: space-between; /* Full Width */
-            gap: 5px; margin-bottom: 20px; width: 100%;
+            display: flex; justify-content: space-between; gap: 4px; margin-bottom: 20px; width: 100%;
         }
         .gallery-slot {
-            width: 23%; aspect-ratio: 1/1; background: #111; border: 1px dashed #444; 
+            width: 19%; aspect-ratio: 1/1; background: #111; border: 1px dashed #444; 
             border-radius: 8px; position: relative; overflow: hidden;
             display: flex; align-items: center; justify-content: center;
         }
         .gallery-slot label { color: var(--accent); font-size: 20px; cursor: pointer; width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
+        .gallery-slot video { width: 100%; height: 100%; object-fit: cover; }
 
         /* --- PROFILE STATS CHIPS --- */
         .stats-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
@@ -156,14 +168,15 @@
             width: 250px; padding: 15px; z-index: 8000;
         }
 
-        /* --- COMPLEX FILTER STYLES --- */
-        .gender-toggle-row {
+        /* --- FILTER ACCORDION STYLES (BLENDED) --- */
+        .toggle-row {
             display: flex; justify-content: space-between; align-items: center;
             background: #111; padding: 12px; border-radius: 10px; margin-bottom: 5px; border: 1px solid #333;
         }
-        .age-slider-group {
-            display: none; padding: 10px; background: #000; border-left: 2px solid var(--accent); margin-bottom: 15px; margin-left: 10px;
+        .accordion-content {
+            display: none; padding: 15px; background: #000; border-left: 2px solid var(--accent); margin-bottom: 15px; margin-left: 10px;
         }
+        /* Custom Toggle Switch */
         .toggle-switch {
             width: 40px; height: 20px; background: #333; border-radius: 20px; position: relative; cursor: pointer;
         }
@@ -173,6 +186,14 @@
         .toggle-checkbox:checked + .toggle-switch { background: var(--accent); }
         .toggle-checkbox:checked + .toggle-switch::after { transform: translateX(20px); }
         .toggle-checkbox { display: none; }
+        
+        /* Accordion Chevron Logic */
+        .accordion-chevron { transition: transform 0.3s; }
+        .toggle-checkbox:checked ~ .accordion-chevron { transform: rotate(180deg); }
+
+        /* Radio Options inside Accordion */
+        .radio-option { display: block; padding: 8px 0; color: #888; cursor: pointer; }
+        .radio-option input { margin-right: 10px; accent-color: var(--accent); }
         
         .style-input { width: 100%; background: #000; border: 1px solid #333; color: white; padding: 12px; border-radius: 10px; }
         .filter-label { color:#888; font-size:11px; font-weight:bold; margin-bottom: 5px; display: block; margin-top: 15px;}
@@ -222,9 +243,9 @@
         </div>
     </div>
     <div class="action-btns">
-        <button id="btn-reject" class="swipe-btn" onclick="swipeManual('left')">✘</button>
+        <button id="btn-reject" class="swipe-btn">✘</button>
         <button class="swipe-btn" style="width: 45px; height: 45px; font-size: 18px; border-color: var(--accent); color: var(--accent);" onclick="resetCard()">⟲</button>
-        <button id="btn-like" class="swipe-btn" onclick="swipeManual('right')">✔</button>
+        <button id="btn-like" class="swipe-btn">✔</button>
     </div>
 </div>
 
@@ -282,6 +303,11 @@
             <div class="gallery-slot"><input type="file" id="g2" hidden><label for="g2">+</label></div>
             <div class="gallery-slot"><input type="file" id="g3" hidden><label for="g3">+</label></div>
             <div class="gallery-slot"><input type="file" id="g4" hidden><label for="g4">+</label></div>
+            <div class="gallery-slot">
+                <input type="file" id="vid-up" hidden accept="video/*" onchange="previewVideo(event)">
+                <label for="vid-up">▶</label>
+                <video id="vid-preview" style="display:none;" autoplay muted loop></video>
+            </div>
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px;">
@@ -294,19 +320,15 @@
             
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                 <div><label class="filter-label">BODY TYPE</label><select class="style-input"><option>Average</option><option>Athletic</option><option>Curvy</option><option>Slim</option><option>Muscular</option></select></div>
-                <div><label class="filter-label">HEIGHT</label><select class="style-input"><option>Short</option><option>Average</option><option>Tall</option></select></div>
+                <div><label class="filter-label">HEIGHT (cm)</label><input type="number" class="style-input" placeholder="175"></div>
             </div>
+            
+            <div><label class="filter-label">SEXUAL ORIENTATION</label><select class="style-input" style="width:100%"><option>Straight</option><option>Gay</option><option>Lesbian</option><option>Bisexual</option><option>Pansexual</option></select></div>
             
             <div><label class="filter-label">ROLE / PREFERENCE</label><select class="style-input" style="width:100%"><option>Switch</option><option>Top</option><option>Bottom</option><option>Vanilla</option></select></div>
             <div><label class="filter-label">ETHNICITY</label><select class="style-input" style="width:100%"><option>Black</option><option>White</option><option>Asian</option><option>Latino/Hispanic</option><option>Middle Eastern</option><option>Mixed</option></select></div>
             
             <div><label class="filter-label">LOVE LANGUAGE</label><select class="style-input" style="width:100%"><option>Physical Touch</option><option>Quality Time</option><option>Words of Affirmation</option><option>Acts of Service</option><option>Receiving Gifts</option></select></div>
-        </div>
-
-        <button onclick="document.getElementById('sug-box').style.display='block'" style="width: 100%; background: #111; border: 1px solid #333; color: white; padding: 15px; border-radius: 12px;">Make a Suggestion</button>
-        <div id="sug-box" style="display: none; padding: 15px; background: #111; border-radius: 12px; margin-top: 15px;">
-            <textarea placeholder="Improve our platform..." style="width: 100%; height: 80px; background: #000; border: 1px solid #444; color: white; padding: 10px; border-radius: 8px;"></textarea>
-            <button style="width: 100%; background: var(--accent); border: none; color: white; padding: 10px; margin-top: 10px; border-radius: 8px; font-weight: bold;">Submit</button>
         </div>
     </div>
 </div>
@@ -336,6 +358,7 @@
             <div class="gallery-slot" style="background: #222;"></div>
             <div class="gallery-slot" style="background: #222;"></div>
             <div class="gallery-slot" style="background: #222;"></div>
+            <div class="gallery-slot" style="background: #222; border-color: var(--accent);">▶</div>
         </div>
         
         <h1 id="view-user-name" style="margin: 0; font-size: 28px; color: var(--accent);">Name, Age</h1>
@@ -343,7 +366,7 @@
 
         <div class="stats-grid">
             <div class="stat-chip">Athletic</div>
-            <div class="stat-chip">5'7"</div>
+            <div class="stat-chip">175cm</div>
             <div class="stat-chip">Switch</div>
             <div class="stat-chip">Latina</div>
             <div class="stat-chip love">❤️ Physical Touch</div>
@@ -363,7 +386,7 @@
 </div>
 
 <div id="filter-modal" class="modal" style="background: rgba(0,0,0,0.9);">
-    <div class="filter-content" style="background: #1A1A1A; width: 85%; max-width: 400px; height: 100%; float: right; padding: 30px;">
+    <div class="filter-content" style="background: #1A1A1A; width: 85%; max-width: 400px; height: 100%; float: right; padding: 30px; overflow-y: auto;">
         <div style="display: flex; justify-content: space-between; margin-bottom: 30px;">
             <h2 style="margin: 0;">Refine Search</h2>
             <button onclick="document.getElementById('filter-modal').style.display='none'" style="background: none; border: none; color: white; font-size: 24px;">✕</button>
@@ -371,50 +394,82 @@
         
         <label class="filter-label">I'M LOOKING FOR</label>
         
-        <div class="gender-toggle-row">
+        <div class="toggle-row">
             <span>Men</span>
-            <input type="checkbox" id="toggle-men" class="toggle-checkbox" onchange="toggleAgeSlider('men-age', this.checked)">
+            <input type="checkbox" id="toggle-men" class="toggle-checkbox" onchange="toggleAccordion('men-age', this.checked)">
             <label for="toggle-men" class="toggle-switch"></label>
         </div>
-        <div id="men-age" class="age-slider-group">
+        <div id="men-age" class="accordion-content">
             <label class="filter-label" style="margin-top:0;">AGE RANGE (MEN)</label>
             <div style="display:flex; gap:10px;"><input type="number" placeholder="18" class="style-input" style="padding:8px;"><input type="number" placeholder="99" class="style-input" style="padding:8px;"></div>
         </div>
 
-        <div class="gender-toggle-row">
+        <div class="toggle-row">
             <span>Women</span>
-            <input type="checkbox" id="toggle-women" class="toggle-checkbox" onchange="toggleAgeSlider('women-age', this.checked)">
+            <input type="checkbox" id="toggle-women" class="toggle-checkbox" onchange="toggleAccordion('women-age', this.checked)">
             <label for="toggle-women" class="toggle-switch"></label>
         </div>
-        <div id="women-age" class="age-slider-group">
+        <div id="women-age" class="accordion-content">
             <label class="filter-label" style="margin-top:0;">AGE RANGE (WOMEN)</label>
             <div style="display:flex; gap:10px;"><input type="number" placeholder="18" class="style-input" style="padding:8px;"><input type="number" placeholder="99" class="style-input" style="padding:8px;"></div>
         </div>
 
-        <div class="gender-toggle-row">
+        <div class="toggle-row">
             <span>Transgender</span>
-            <input type="checkbox" id="toggle-trans" class="toggle-checkbox" onchange="toggleAgeSlider('trans-age', this.checked)">
+            <input type="checkbox" id="toggle-trans" class="toggle-checkbox" onchange="toggleAccordion('trans-age', this.checked)">
             <label for="toggle-trans" class="toggle-switch"></label>
         </div>
-        <div id="trans-age" class="age-slider-group">
+        <div id="trans-age" class="accordion-content">
             <label class="filter-label" style="margin-top:0;">AGE RANGE (TRANS)</label>
             <div style="display:flex; gap:10px;"><input type="number" placeholder="18" class="style-input" style="padding:8px;"><input type="number" placeholder="99" class="style-input" style="padding:8px;"></div>
         </div>
 
-        <label class="filter-label">DISTANCE</label>
-        <input type="range" min="1" max="100" style="accent-color: var(--accent); width: 100%;">
+        <label class="filter-label">DISTANCE: <span id="dist-val" style="color:var(--accent)">50 mi</span></label>
+        <input type="range" min="1" max="200" value="50" oninput="document.getElementById('dist-val').innerText = this.value + ' mi'" style="accent-color: var(--accent); width: 100%;">
 
         <label class="filter-label">ETHNICITY</label>
-        <select class="style-input"><option>Any</option><option>Black</option><option>White</option><option>Asian</option><option>Latino</option></select>
+        <div class="toggle-row">
+            <span>Select Ethnicity</span>
+            <input type="checkbox" id="toggle-eth" class="toggle-checkbox" onchange="toggleAccordion('eth-content', this.checked)">
+            <label for="toggle-eth" class="toggle-switch"></label>
+        </div>
+        <div id="eth-content" class="accordion-content">
+            <label class="radio-option"><input type="checkbox"> Black</label>
+            <label class="radio-option"><input type="checkbox"> White</label>
+            <label class="radio-option"><input type="checkbox"> Asian</label>
+            <label class="radio-option"><input type="checkbox"> Latino</label>
+            <label class="radio-option"><input type="checkbox"> Middle Eastern</label>
+        </div>
+
+        <label class="filter-label">SEXUAL ORIENTATION</label>
+        <div class="toggle-row">
+            <span>Select Orientation</span>
+            <input type="checkbox" id="toggle-ori" class="toggle-checkbox" onchange="toggleAccordion('ori-content', this.checked)">
+            <label for="toggle-ori" class="toggle-switch"></label>
+        </div>
+        <div id="ori-content" class="accordion-content">
+            <label class="radio-option"><input type="checkbox"> Straight</label>
+            <label class="radio-option"><input type="checkbox"> Gay</label>
+            <label class="radio-option"><input type="checkbox"> Lesbian</label>
+            <label class="radio-option"><input type="checkbox"> Bisexual</label>
+            <label class="radio-option"><input type="checkbox"> Pansexual</label>
+        </div>
 
         <label class="filter-label">ROLE / PREFERENCE</label>
-        <select class="style-input"><option>Any</option><option>Switch</option><option>Top</option><option>Bottom</option></select>
-
-        <label class="filter-label">LOVE LANGUAGE</label>
-        <select class="style-input"><option>Any</option><option>Physical Touch</option><option>Quality Time</option><option>Words of Affirmation</option></select>
+        <div class="toggle-row">
+            <span>Select Role</span>
+            <input type="checkbox" id="toggle-role" class="toggle-checkbox" onchange="toggleAccordion('role-content', this.checked)">
+            <label for="toggle-role" class="toggle-switch"></label>
+        </div>
+        <div id="role-content" class="accordion-content">
+            <label class="radio-option"><input type="checkbox"> Switch</label>
+            <label class="radio-option"><input type="checkbox"> Top</label>
+            <label class="radio-option"><input type="checkbox"> Bottom</label>
+        </div>
 
         <button onclick="document.getElementById('filter-modal').style.display='none'" style="width:100%; background: var(--accent); padding: 15px; border-radius: 12px; border:none; color:white; font-weight:bold; margin-top: 20px;">Apply Filters</button>
-        <div style="height: 50px;"></div> </div>
+        <div style="height: 50px;"></div> 
+    </div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -438,8 +493,8 @@
         if(viewId === 'map') setTimeout(() => map.invalidateSize(), 100);
     }
 
-    // --- FILTER LOGIC ---
-    function toggleAgeSlider(id, isChecked) {
+    // --- ACCORDION LOGIC ---
+    function toggleAccordion(id, isChecked) {
         document.getElementById(id).style.display = isChecked ? 'block' : 'none';
     }
 
@@ -466,7 +521,7 @@
         document.getElementById('view-user-modal').style.display = 'block';
     }
 
-    // --- SWIPE LOGIC ---
+    // --- SWIPE LOGIC (WITH COLOR FADE) ---
     const card = document.getElementById('active-card');
     const btnReject = document.getElementById('btn-reject');
     const btnLike = document.getElementById('btn-like');
@@ -480,12 +535,17 @@
         currentX = e.touches[0].clientX - startX;
         card.style.transform = `translateX(${currentX}px) rotate(${currentX/15}deg)`;
         
-        if(currentX > 20) {
-            btnLike.classList.add('active'); btnReject.classList.remove('active');
-        } else if (currentX < -20) {
-            btnReject.classList.add('active'); btnLike.classList.remove('active');
+        // COLOR FADE LOGIC
+        if(currentX > 0) {
+            // Dragging Right -> Purple Fade on Check
+            const opacity = Math.min(currentX / 100, 1);
+            btnLike.style.backgroundColor = `rgba(139, 92, 246, ${opacity})`; // Accent Purple
+            btnLike.style.borderColor = `rgba(139, 92, 246, 1)`;
         } else {
-            btnLike.classList.remove('active'); btnReject.classList.remove('active');
+            // Dragging Left -> Orange Fade on X
+            const opacity = Math.min(Math.abs(currentX) / 100, 1);
+            btnReject.style.backgroundColor = `rgba(249, 115, 22, ${opacity})`; // Warning Orange
+            btnReject.style.borderColor = `rgba(249, 115, 22, 1)`;
         }
     });
 
@@ -515,7 +575,10 @@
     }
     
     function resetButtons() {
-        btnLike.classList.remove('active'); btnReject.classList.remove('active');
+        btnLike.style.backgroundColor = 'transparent';
+        btnLike.style.borderColor = '#444';
+        btnReject.style.backgroundColor = 'transparent';
+        btnReject.style.borderColor = '#444';
     }
 
     function previewImg(e, id) {
@@ -524,10 +587,19 @@
         r.readAsDataURL(e.target.files[0]);
     }
 
+    // Video Preview Logic
+    function previewVideo(e) {
+        const v = document.getElementById('vid-preview');
+        v.src = URL.createObjectURL(e.target.files[0]);
+        v.style.display = 'block'; 
+        v.previousElementSibling.style.display='none';
+    }
+
     // --- MAP LOGIC ---
     const map = L.map('map').setView([40.7128, -74.0060], 13);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
 
+    // HOLLOW CIRCLE MARKER
     const myIcon = L.divIcon({ className: 'my-location-pin', iconSize: [20, 20] });
     L.marker([40.7128, -74.0060], {icon: myIcon}).addTo(map);
 
