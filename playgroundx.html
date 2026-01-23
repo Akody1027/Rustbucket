@@ -18,6 +18,8 @@
             --text-main: #E5E7EB;
             --text-dim: #9CA3AF;
             --btn-dim: grey;
+            --btnfont: white;
+            
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -559,7 +561,7 @@
         card.addEventListener('touchmove', (e) => {
             currentX = e.touches[0].clientX - startX;
             card.style.transform = `translateX(${currentX}px) rotate(${currentX/15}deg)`;
-            if(currentX > 0) { btnLike.style.background = 'var(--accent)'; } 
+            if(currentX > 0) { btnLike.style.background = 'var(--accent)'; btnLike.style.background = 'var(--btnfont)';} 
             else { btnReject.style.background = 'var(--btn-dim)'; }
         });
         card.addEventListener('touchend', () => {
@@ -684,5 +686,6 @@
 </script>
 </body>
 </html>
+
 
 
