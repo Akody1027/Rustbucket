@@ -150,11 +150,16 @@
         .leaflet-pane > canvas, .leaflet-zoom-box, 
         .leaflet-image-layer, .leaflet-layer{
 
-            outline: 0.1q dashed #000000;
-            background-color:#000000;
-            
+            outline-color: black;
         }
+        .leaflet-pane, .leaflet-tile,
+        .leaflet-marker-icon, .leaflet-marker-shadow, 
+        .leaflet-tile-container, .leaflet-pane > svg, 
+        .leaflet-pane > canvas, .leaflet-zoom-box, 
+        .leaflet-image-layer, .leaflet-layer:focus{
 
+            outline-color: black;
+        }
         
 
 
@@ -725,6 +730,7 @@
 </script>
 </body>
 </html>
+
 
 
 
