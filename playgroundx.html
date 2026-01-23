@@ -732,11 +732,21 @@
         if(!e.target.closest('#user-dropdown') && !e.target.closest('#user-icon-trigger')) document.getElementById('user-dropdown').style.display='none';
         if(!e.target.closest('#report-menu') && !e.target.closest('button[onclick="toggleReportMenu()"]')) document.getElementById('report-menu').style.display='none';
     });
+     // --- FIX: Attach Click Event to "My Profile" ---
+document.getElementById('open-my-profile').addEventListener('click', function(e) {
+    e.preventDefault(); // Prevents the page from jumping to top
+    document.getElementById('user-dropdown').style.display = 'none'; // Close the dropdown
+    document.getElementById('profile-modal').style.display = 'block'; // Open the edit profile modal
+});
+    
+
+    
 
     initBackend();
 </script>
 </body>
 </html>
+
 
 
 
