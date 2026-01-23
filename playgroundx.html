@@ -312,7 +312,12 @@
 }
 
 
-
+/* --- UNREAD INDICATOR --- */
+.msg-item.unread {
+    border: 1px solid var(--accent) !important; /* Purple Border */
+    background: #1a1a1a; /* Slightly lighter background */
+}
+        
 
         
     </style>
@@ -524,16 +529,17 @@
         <div id="tab-winks" class="tab-pane active"></div>
 
 <div id="tab-chats" class="tab-pane">
-    <div id="msg-jess" class="msg-item" onclick="openChat('Jess_Vibes')">
-        <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100" class="msg-avatar">
-        <div>
-            <h3 style="margin:0;color:white;font-size:14px;">Jess_Vibes</h3>
-            <p style="margin:0;color:#888;font-size:12px;">Hey! Are you nearby?</p>
-        </div>
-        <button class="delete-btn" onclick="askToDelete(event, 'msg', 'msg-jess')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-        </button>
+    <div id="msg-jess" class="msg-item unread" onclick="openChatWrapper('Jess_Vibes', 'msg-jess')">
+    <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100" class="msg-avatar">
+    <div>
+        <h3 style="margin:0;color:white;font-size:14px;">Jess_Vibes</h3>
+        <p style="margin:0;color:#888;font-size:12px;">Hey! Are you nearby?</p>
     </div>
+    <button class="delete-btn" onclick="askToDelete(event, 'msg', 'msg-jess')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+    </button>
+</div>
+
 </div>
 
 
@@ -748,12 +754,28 @@
     }
 
     // --- UI FUNCTIONS ---
-    function updateBadge() {
-        let users = JSON.parse(localStorage.getItem('pgX_users'));
-        let c = users.filter(u => u.winkedAtMe).length;
-        document.getElementById('msg-badge').innerText = c;
-        document.getElementById('msg-badge').style.display = c > 0 ? 'flex' : 'none';
-    }
+    
+function updateBadge() {
+    let users = JSON.parse(localStorage.getItem('pgX_users'));
+    
+    // Count unread winks
+    let unreadWinks = users.filter(u => u.winkedAtMe && !u.winkRead).length;
+    
+    // Count unread messages (Static Jess logic + Winks)
+    let totalUnread = unreadWinks + (jessRead ? 0 : 1); 
+    
+    // Update the UI
+    const badge = document.getElementById('msg-badge');
+    badge.innerText = totalUnread;
+    
+    // If deleted or all read, hide the badge
+    // We check if the element exists (deleted) for Jess
+    const jessExists = document.getElementById('msg-jess');
+    if (!jessExists && jessRead === false) totalUnread--; // Adjust if deleted but technically "unread"
+    
+    badge.style.display = totalUnread > 0 ? 'flex' : 'none';
+}
+
 
 
 
@@ -762,7 +784,8 @@ function loadWinks() {
     let winks = users.filter(u => u.winkedAtMe);
     
     document.getElementById('tab-winks').innerHTML = winks.map(u => `
-        <div class="msg-item" onclick="openUserProfile('${u.alias}', ${u.age}, '${u.img}', ${u.id}); document.getElementById('msg-modal').style.display='none'">
+        <div class="msg-item ${u.winkRead ? '' : 'unread'}" 
+             onclick="markWinkRead(${u.id}); openUserProfile('${u.alias}', ${u.age}, '${u.img}', ${u.id}); document.getElementById('msg-modal').style.display='none'">
             <img src="${u.img}" class="msg-avatar">
             <div>
                 <h3 style="margin:0;color:white;font-size:14px;">${u.alias}</h3>
@@ -940,12 +963,46 @@ function loadMyProfile() {
 loadMyProfile();
     
     
+
+// --- MARK AS READ LOGIC ---
+
+function markWinkRead(id) {
+    let users = JSON.parse(localStorage.getItem('pgX_users'));
+    let target = users.find(u => u.id === id);
+    if (target) {
+        target.winkRead = true; // Mark as read
+        localStorage.setItem('pgX_users', JSON.stringify(users));
+        updateBadge(); // Recalculate badge
+    }
+}
+
+// For the static 'Jess' message
+let jessRead = false; 
+
+function openChatWrapper(name, elementId) {
+    // 1. Remove border visually
+    const el = document.getElementById(elementId);
+    if(el) el.classList.remove('unread');
+    
+    // 2. Mark logic as read
+    if(name === 'Jess_Vibes') jessRead = true;
+    
+    // 3. Update Badge
+    updateBadge();
+    
+    // 4. Open the chat
+    openChat(name);
+}
+
+
+
     
 
     initBackend();
 </script>
 </body>
 </html>
+
 
 
 
