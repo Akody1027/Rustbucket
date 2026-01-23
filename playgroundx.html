@@ -150,7 +150,7 @@
         .leaflet-pane > canvas, .leaflet-zoom-box, 
         .leaflet-image-layer, .leaflet-layer{
 
-            outline-color: black;
+            outline:0.01q dotted black;
         }
         .leaflet-pane, .leaflet-tile,
         .leaflet-marker-icon, .leaflet-marker-shadow, 
@@ -158,10 +158,17 @@
         .leaflet-pane > canvas, .leaflet-zoom-box, 
         .leaflet-image-layer, .leaflet-layer:focus{
 
-            outline-color: black;
+            outline:0.01q dotted black;
         }
         
+        .leaflet-zoom-animated {
 
+            outline:0.01q dotted black;
+        }
+
+
+
+        
 
 .leaflet-grid-label .lng,
 .leaflet-grid-label .lat {
@@ -730,6 +737,7 @@
 </script>
 </body>
 </html>
+
 
 
 
