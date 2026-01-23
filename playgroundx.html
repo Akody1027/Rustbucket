@@ -324,12 +324,7 @@
             
             <div><label class="filter-label">RELATIONSHIP TYPE</label><select id="p-rel-type" class="style-input"><option>Marriage</option><option>Long-Term</option><option>Short-Term</option><option>Intimacy w/o Connection</option><option>Friends</option><option>FWB</option></select></div>
             <div><label class="filter-label">SEXUAL ORIENTATION</label><select id="p-ori" class="style-input"><option>Straight</option><option>Gay</option><option>Lesbian</option><option>Bisexual</option><option>Pansexual</option></select></div>
-            <div><label class="filter-label">RELIGION</label><select id="p-rel" class="style-input"><option>Christian</option><option>Muslim</option><option>Jewish</option><option>Hindu</option><option>Atheist</option><option>Agnostic</option><option>Spiritual</option><option>Other</option></select></div>
-            <div><label class="filter-label">PETS</label><select id="p-pets" class="style-input"><option>Dog</option><option>Cat</option><option>Bird</option><option>Reptile</option><option>None</option><option>Allergic</option></select></div>
             <div><label class="filter-label">VICES</label><select id="p-vices" class="style-input"><option>None</option><option>Smoker</option><option>Social Drinker</option><option>420 Friendly</option></select></div>
-            <div><label class="filter-label">POLITICS</label><select id="p-pol" class="style-input"><option>Apolitical</option><option>Liberal</option><option>Moderate</option><option>Conservative</option></select></div>
-            <div><label class="filter-label">EDUCATION</label><select id="p-edu" class="style-input"><option>High School</option><option>Undergrad</option><option>Postgrad</option></select></div>
-            <div><label class="filter-label">ZODIAC</label><select id="p-zod" class="style-input"><option>Aries</option><option>Taurus</option><option>Gemini</option><option>Cancer</option><option>Leo</option><option>Virgo</option><option>Libra</option><option>Scorpio</option><option>Sagittarius</option><option>Capricorn</option><option>Aquarius</option><option>Pisces</option></select></div>
             <div><label class="filter-label">FAMILY PLANS</label><select id="p-fam" class="style-input"><option>Not Sure</option><option>Want Kids</option><option>Have Kids</option><option>Don't Want Kids</option></select></div>
         </div>
     </div>
@@ -359,33 +354,9 @@
         <div class="toggle-row"><span>Select Type</span><input type="checkbox" id="t-rt" class="toggle-checkbox" onchange="toggleAccordion('ac-rt', this.checked)"><label for="t-rt" class="toggle-switch"></label></div>
         <div id="ac-rt" class="accordion-content"><label class="radio-option"><input type="checkbox" class="f-rt" value="Marriage"> Marriage</label><label class="radio-option"><input type="checkbox" class="f-rt" value="Long-Term"> Long-Term</label><label class="radio-option"><input type="checkbox" class="f-rt" value="Short-Term"> Short-Term</label></div>
 
-        <label class="filter-label">RELIGION</label>
-        <div class="toggle-row"><span>Select Religion</span><input type="checkbox" id="t-rel" class="toggle-checkbox" onchange="toggleAccordion('ac-rel', this.checked)"><label for="t-rel" class="toggle-switch"></label></div>
-        <div id="ac-rel" class="accordion-content"><label class="radio-option"><input type="checkbox" class="f-rel" value="Christian"> Christian</label><label class="radio-option"><input type="checkbox" class="f-rel" value="Muslim"> Muslim</label><label class="radio-option"><input type="checkbox" class="f-rel" value="Jewish"> Jewish</label><label class="radio-option"><input type="checkbox" class="f-rel" value="Spiritual"> Spiritual</label></div>
-
-        <label class="filter-label">PETS</label>
-        <div class="toggle-row"><span>Select Pets</span><input type="checkbox" id="t-pets" class="toggle-checkbox" onchange="toggleAccordion('ac-pets', this.checked)"><label for="t-pets" class="toggle-switch"></label></div>
-        <div id="ac-pets" class="accordion-content"><label class="radio-option"><input type="checkbox" class="f-pets" value="Dog"> Dog</label><label class="radio-option"><input type="checkbox" class="f-pets" value="Cat"> Cat</label><label class="radio-option"><input type="checkbox" class="f-pets" value="Bird"> Bird</label></div>
-
         <label class="filter-label">VICES</label>
         <div class="toggle-row"><span>Select Vices</span><input type="checkbox" id="t-vice" class="toggle-checkbox" onchange="toggleAccordion('ac-vice', this.checked)"><label for="t-vice" class="toggle-switch"></label></div>
         <div id="ac-vice" class="accordion-content"><label class="radio-option"><input type="checkbox" class="f-vice" value="Smoker"> Smoker</label><label class="radio-option"><input type="checkbox" class="f-vice" value="420 Friendly"> 420 Friendly</label><label class="radio-option"><input type="checkbox" class="f-vice" value="Social Drinker"> Social Drinker</label></div>
-
-        <label class="filter-label">POLITICS</label>
-        <div class="toggle-row"><span>Select Politics</span><input type="checkbox" id="t-pol" class="toggle-checkbox" onchange="toggleAccordion('ac-pol', this.checked)"><label for="t-pol" class="toggle-switch"></label></div>
-        <div id="ac-pol" class="accordion-content"><label class="radio-option"><input type="checkbox" class="f-pol" value="Liberal"> Liberal</label><label class="radio-option"><input type="checkbox" class="f-pol" value="Conservative"> Conservative</label><label class="radio-option"><input type="checkbox" class="f-pol" value="Moderate"> Moderate</label></div>
-
-        <label class="filter-label">EDUCATION</label>
-        <div class="toggle-row"><span>Select Education</span><input type="checkbox" id="t-edu" class="toggle-checkbox" onchange="toggleAccordion('ac-edu', this.checked)"><label for="t-edu" class="toggle-switch"></label></div>
-        <div id="ac-edu" class="accordion-content"><label class="radio-option"><input type="checkbox" class="f-edu" value="Undergrad"> Undergrad</label><label class="radio-option"><input type="checkbox" class="f-edu" value="Postgrad"> Postgrad</label></div>
-
-        <label class="filter-label">ZODIAC</label>
-        <div class="toggle-row"><span>Select Zodiac</span><input type="checkbox" id="t-zod" class="toggle-checkbox" onchange="toggleAccordion('ac-zod', this.checked)"><label for="t-zod" class="toggle-switch"></label></div>
-        <div id="ac-zod" class="accordion-content"><label class="radio-option"><input type="checkbox" class="f-zod" value="Aries"> Aries</label><label class="radio-option"><input type="checkbox" class="f-zod" value="Leo"> Leo</label><label class="radio-option"><input type="checkbox" class="f-zod" value="Pisces"> Pisces</label></div>
-
-        <label class="filter-label">FAMILY PLANS</label>
-        <div class="toggle-row"><span>Select Plans</span><input type="checkbox" id="t-fam" class="toggle-checkbox" onchange="toggleAccordion('ac-fam', this.checked)"><label for="t-fam" class="toggle-switch"></label></div>
-        <div id="ac-fam" class="accordion-content"><label class="radio-option"><input type="checkbox" class="f-fam" value="Want Kids"> Want Kids</label><label class="radio-option"><input type="checkbox" class="f-fam" value="Don't Want Kids"> Don't Want Kids</label></div>
 
         <button onclick="applyFilters()" style="width:100%; background: var(--accent); padding: 15px; border-radius: 12px; border:none; color:white; font-weight:bold; margin-top: 20px;">Apply Filters</button>
         <div style="height: 50px;"></div> 
@@ -712,3 +683,4 @@
 </script>
 </body>
 </html>
+
