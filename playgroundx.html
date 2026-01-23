@@ -582,7 +582,17 @@
     const DATA_REL_TYPE = ['Marriage', 'Long-Term', 'Short-Term', 'Intimacy w/o Connection', 'Friends', 'FWB'];
 
     // EXPLICIT DEFINITIONS TO PREVENT CRASH
-    window.openMsgModal = function() { document.getElementById('msg-modal').style.display = 'block'; };
+    window.openMsgModal = function() { 
+    // Show the modal
+    document.getElementById('msg-modal').style.display = 'block'; 
+    
+    // Reset to List View (Hide Chat)
+    document.getElementById('msg-list-view').style.display = 'block';
+    document.getElementById('chat-view').style.display = 'none';
+};
+    
+
+    
     window.toggleUserMenu = function() { let m = document.getElementById('user-dropdown'); m.style.display = m.style.display==='block'?'none':'block'; };
 
     function initBackend() {
@@ -832,12 +842,25 @@ function loadWinks() {
         btn.classList.add('active');
         if(viewId === 'map') setTimeout(() => map.invalidateSize(), 100);
     }
+
+
     function openTab(tabId, btn) {
-        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(tabId).classList.add('active');
-        btn.classList.add('active');
-    }
+    // 1. Force the List View to show and Chat View to hide
+    document.getElementById('msg-list-view').style.display = 'block';
+    document.getElementById('chat-view').style.display = 'none';
+
+    // 2. Switch the active tab content
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    btn.classList.add('active');
+}
+
+
+
+
+
+    
     function previewImg(e, id) { const r = new FileReader(); r.onload = function() { document.getElementById(id).src = r.result; }; r.readAsDataURL(e.target.files[0]); }
     function previewVideo(e) { const v = document.getElementById('vid-preview'); v.src = URL.createObjectURL(e.target.files[0]); v.style.display = 'block'; v.previousElementSibling.style.display='none'; }
     
@@ -923,6 +946,7 @@ loadMyProfile();
 </script>
 </body>
 </html>
+
 
 
 
