@@ -467,6 +467,22 @@
         <label class="radio-option" onclick="selectProfileOption('disp-rel', 'Fun', 'acc-rel')">Fun</label>
     </div>
 
+
+<label class="filter-label">LOVE LANGUAGE</label>
+<div class="toggle-row" onclick="toggleProfileAcc('acc-love')">
+    <span id="disp-love">Select Love Language...</span>
+    <span style="color:#666;">▼</span>
+</div>
+<div id="acc-love" class="accordion-content">
+    <label class="radio-option" onclick="selectProfileOption('disp-love', 'Words of Affirmation', 'acc-love')">Words of Affirmation</label>
+    <label class="radio-option" onclick="selectProfileOption('disp-love', 'Acts of Service', 'acc-love')">Acts of Service</label>
+    <label class="radio-option" onclick="selectProfileOption('disp-love', 'Receiving Gifts', 'acc-love')">Receiving Gifts</label>
+    <label class="radio-option" onclick="selectProfileOption('disp-love', 'Quality Time', 'acc-love')">Quality Time</label>
+    <label class="radio-option" onclick="selectProfileOption('disp-love', 'Physical Touch', 'acc-love')">Physical Touch</label>
+</div>
+
+
+    
     <label class="filter-label">VICES</label>
     <div class="toggle-row" onclick="toggleProfileAcc('acc-vices')">
         <span id="disp-vices">None</span>
@@ -1120,6 +1136,7 @@ function selectProfileOption(displayId, value, accordionId) {
 </script>
 </body>
 </html>
+
 
 
 
