@@ -417,29 +417,70 @@
             </div>
         </div>
 
-        <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px;">
-            <div><label class="filter-label" style="margin-top:0;">BIO</label><textarea id="p-bio" style="width: 100%; background: #111; border: 1px solid #333; padding: 12px; border-radius: 10px; color: white;"></textarea></div>
-            
-            <div class="toggle-row"><span>Show Explicit Content</span><input type="checkbox" id="p-explicit" class="toggle-checkbox"><label for="p-explicit" class="toggle-switch"></label></div>
+<div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 50px;">
+    
+    <div><label class="filter-label" style="margin-top:0;">BIO</label><textarea id="p-bio" style="width: 100%; background: #111; border: 1px solid #333; padding: 12px; border-radius: 10px; color: white;"></textarea></div>
 
-            <div class="toggle-row"><span>Use GPS Location</span><input type="checkbox" id="p-use-gps" class="toggle-checkbox" checked onchange="toggleAccordion('loc-manual', !this.checked)"><label for="p-use-gps" class="toggle-switch"></label></div>
-            <div id="loc-manual" class="accordion-content"><input type="text" class="style-input" placeholder="Enter City..."></div>
+    <div class="toggle-row"><span>Show Explicit Content</span><input type="checkbox" id="p-explicit" class="toggle-checkbox"><label for="p-explicit" class="toggle-switch"></label></div>
+    <div class="toggle-row"><span>Use GPS Location</span><input type="checkbox" id="p-use-gps" class="toggle-checkbox" checked onchange="toggleAccordion('loc-manual', !this.checked)"><label for="p-use-gps" class="toggle-switch"></label></div>
+    <div id="loc-manual" class="accordion-content"><input type="text" class="style-input" placeholder="Enter City..."></div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <div><label class="filter-label">GENDER</label><select id="p-gender" class="style-input"><option>Man</option><option>Woman</option><option>Transgender</option><option>Non-Binary</option><option>Couple</option></select></div>
-                <div><label class="filter-label">AGE</label><input type="number" id="p-age" class="style-input" value="21"></div>
-            </div>
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <div><label class="filter-label">BODY TYPE</label><select id="p-body" class="style-input"><option>Average</option><option>Athletic</option><option>Curvy</option><option>Slim</option><option>Muscular</option></select></div>
-                <div><label class="filter-label">HEIGHT</label><div style="display:flex; gap:5px;"><input type="number" class="style-input" placeholder="Ft"><input type="number" class="style-input" placeholder="In"></div></div>
-            </div>
-            
-            <div><label class="filter-label">RELATIONSHIP TYPE</label><select id="p-rel-type" class="style-input"><option>Marriage</option><option>Long-Term</option><option>Short-Term</option><option>Intimacy w/o Connection</option><option>Friends</option><option>FWB</option></select></div>
-            <div><label class="filter-label">SEXUAL ORIENTATION</label><select id="p-ori" class="style-input"><option>Straight</option><option>Gay</option><option>Lesbian</option><option>Bisexual</option><option>Pansexual</option></select></div>
-            <div><label class="filter-label">VICES</label><select id="p-vices" class="style-input"><option>None</option><option>Smoker</option><option>Social Drinker</option><option>420 Friendly</option></select></div>
-            <div><label class="filter-label">FAMILY PLANS</label><select id="p-fam" class="style-input"><option>Not Sure</option><option>Want Kids</option><option>Have Kids</option><option>Don't Want Kids</option></select></div>
+    <label class="filter-label">GENDER</label>
+    <div class="toggle-row" onclick="toggleProfileAcc('acc-gender')">
+        <span id="disp-gender">Select Gender...</span>
+        <span style="color:#666;">▼</span>
+    </div>
+    <div id="acc-gender" class="accordion-content">
+        <label class="radio-option" onclick="selectProfileOption('disp-gender', 'Man', 'acc-gender')">Man</label>
+        <label class="radio-option" onclick="selectProfileOption('disp-gender', 'Woman', 'acc-gender')">Woman</label>
+        <label class="radio-option" onclick="selectProfileOption('disp-gender', 'Non-Binary', 'acc-gender')">Non-Binary</label>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div>
+            <label class="filter-label">AGE</label>
+            <input type="number" id="p-age" class="style-input" value="21" style="text-align:center;">
         </div>
+        <div>
+            <label class="filter-label">BODY TYPE</label>
+            <div class="toggle-row" onclick="toggleProfileAcc('acc-body')" style="justify-content:center;">
+                <span id="disp-body">Average</span>
+            </div>
+        </div>
+    </div>
+    <div id="acc-body" class="accordion-content">
+        <label class="radio-option" onclick="selectProfileOption('disp-body', 'Average', 'acc-body')">Average</label>
+        <label class="radio-option" onclick="selectProfileOption('disp-body', 'Athletic', 'acc-body')">Athletic</label>
+        <label class="radio-option" onclick="selectProfileOption('disp-body', 'Curvy', 'acc-body')">Curvy</label>
+        <label class="radio-option" onclick="selectProfileOption('disp-body', 'Muscular', 'acc-body')">Muscular</label>
+    </div>
+
+    <label class="filter-label">RELATIONSHIP TYPE</label>
+    <div class="toggle-row" onclick="toggleProfileAcc('acc-rel')">
+        <span id="disp-rel">Select Type...</span>
+        <span style="color:#666;">▼</span>
+    </div>
+    <div id="acc-rel" class="accordion-content">
+        <label class="radio-option" onclick="selectProfileOption('disp-rel', 'Marriage', 'acc-rel')">Marriage</label>
+        <label class="radio-option" onclick="selectProfileOption('disp-rel', 'Long-Term', 'acc-rel')">Long-Term</label>
+        <label class="radio-option" onclick="selectProfileOption('disp-rel', 'Short-Term', 'acc-rel')">Short-Term</label>
+        <label class="radio-option" onclick="selectProfileOption('disp-rel', 'Fun', 'acc-rel')">Fun</label>
+    </div>
+
+    <label class="filter-label">VICES</label>
+    <div class="toggle-row" onclick="toggleProfileAcc('acc-vices')">
+        <span id="disp-vices">None</span>
+        <span style="color:#666;">▼</span>
+    </div>
+    <div id="acc-vices" class="accordion-content">
+        <label class="radio-option" onclick="selectProfileOption('disp-vices', 'None', 'acc-vices')">None</label>
+        <label class="radio-option" onclick="selectProfileOption('disp-vices', 'Smoker', 'acc-vices')">Smoker</label>
+        <label class="radio-option" onclick="selectProfileOption('disp-vices', 'Social Drinker', 'acc-vices')">Social Drinker</label>
+        <label class="radio-option" onclick="selectProfileOption('disp-vices', '420 Friendly', 'acc-vices')">420 Friendly</label>
+    </div>
+
+</div>
+
     </div>
 </div>
 
@@ -1048,12 +1089,38 @@ function openChatWrapper(name, elementId) {
 
 
 
+
+// --- PROFILE ACCORDION LOGIC ---
+
+// 1. Toggles the dropdown list open/closed
+function toggleProfileAcc(id) {
+    const el = document.getElementById(id);
+    // Close all others first (optional, keeps UI clean)
+    document.querySelectorAll('.accordion-content').forEach(d => {
+        if(d.id !== id) d.style.display = 'none';
+    });
+    // Toggle current
+    el.style.display = el.style.display === 'block' ? 'none' : 'block';
+}
+
+// 2. Updates the display text when you pick an option
+function selectProfileOption(displayId, value, accordionId) {
+    document.getElementById(displayId).innerText = value;
+    document.getElementById(displayId).style.color = 'var(--accent)'; // Make it purple
+    document.getElementById(accordionId).style.display = 'none'; // Close list
+}
+
+
+
+
+    
     
 
     initBackend();
 </script>
 </body>
 </html>
+
 
 
 
