@@ -351,7 +351,8 @@
         <button class="view-btn" onclick="switchView('map', this)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg></button>
     </div>
     <button class="filter-btn" onclick="document.getElementById('filter-modal').style.display='block'">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" 
+        y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
     </button>
 </div>
 <div id="view-swipe" class="app-view active">
@@ -464,7 +465,7 @@
 
         <label class="filter-label">RELATIONSHIP TYPE</label>
         <div class="toggle-row"><span>Select Type</span><input type="checkbox" id="t-rt" class="toggle-checkbox" onchange="toggleAccordion('ac-rt', this.checked)"><label for="t-rt" class="toggle-switch"></label></div>
-        <div id="ac-rt" class="accordion-content"><label class="radio-option"><input type="checkbox" class="f-rt" value="Marriage"> Marriage</label><label class="radio-option"><input type="checkbox" class="f-rt" value="Long-Term"> Long-Term</label><label class="radio-option"><input type="checkbox" class="f-rt" value="Short-Term"> Short-Term</label><input type="checkbox" class="f-rt" value="Nostrings"> No Strings</label><input type="checkbox" class="f-rt" value="Friendship"> Friendship</label></div>
+        <div id="ac-rt" class="accordion-content"><label class="radio-option"><input type="checkbox" class="f-rt" value="Marriage"> Marriage</label><label class="radio-option"><input type="checkbox" class="f-rt" value="Long-Term"> Long-Term</label><label class="radio-option"><input type="checkbox" class="f-rt" value="Short-Term"> Short-Term</label><label class="radio-option"><input type="checkbox" class="f-rt" value="No strings"> No Strings</label><label class="radio-option"><input type="checkbox" class="f-rt" value="Friendship"> Friendship</label></div>
 
         <label class="filter-label">VICES</label>
         <div class="toggle-row"><span>Select Vices</span><input type="checkbox" id="t-vice" class="toggle-checkbox" onchange="toggleAccordion('ac-vice', this.checked)"><label for="t-vice" class="toggle-switch"></label></div>
@@ -1053,6 +1054,7 @@ function openChatWrapper(name, elementId) {
 </script>
 </body>
 </html>
+
 
 
 
