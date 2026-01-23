@@ -17,6 +17,7 @@
             --card-dark: #1E1E1E;
             --text-main: #E5E7EB;
             --text-dim: #9CA3AF;
+            --btn-dim: grey;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -559,7 +560,7 @@
             currentX = e.touches[0].clientX - startX;
             card.style.transform = `translateX(${currentX}px) rotate(${currentX/15}deg)`;
             if(currentX > 0) { btnLike.style.background = 'var(--accent)'; } 
-            else { btnReject.style.background = 'var(--warning)'; }
+            else { btnReject.style.background = 'var(--btn-dim)'; }
         });
         card.addEventListener('touchend', () => {
             if (currentX > 100) userSwipe('right');
@@ -683,4 +684,5 @@
 </script>
 </body>
 </html>
+
 
