@@ -6,6 +6,37 @@
     <title>playgroundX | Production</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <script type="module">
+  // 1. Import the specific Firebase functions from the web (CDN)
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+  // We will need Firestore later for the database
+  import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  // 2. Paste your specific keys from the screenshot
+  const firebaseConfig = {
+    apiKey: "AIzaSyDFmhk3ybnsVsFenCE3xvdmy5y_4u9ss7o", 
+    authDomain: "playgroundx-ca021.firebaseapp.com",
+    projectId: "playgroundx-ca021",
+    storageBucket: "playgroundx-ca021.firebasestorage.app",
+    messagingSenderId: "427340828971",
+    appId: "1:427340828971:web:1d9e2dc22ecd69593eb56e",
+    measurementId: "G-NEV8FYG0WK"
+  };
+
+  // 3. Initialize the App
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+  const db = getFirestore(app);
+
+  // 4. Make 'db' available to your existing javascript
+  window.db = db;
+  
+  console.log("Firebase Connection Successful! ✅");
+    </script>
+    
+
     
     <style>
         :root {
@@ -1136,6 +1167,7 @@ function selectProfileOption(displayId, value, accordionId) {
 </script>
 </body>
 </html>
+
 
 
 
