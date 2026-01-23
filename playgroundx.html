@@ -588,6 +588,7 @@
     const DATA_REL_TYPE = ['Marriage', 'Long-Term', 'Short-Term', 'Intimacy w/o Connection', 'Friends', 'FWB'];
 
     // EXPLICIT DEFINITIONS TO PREVENT CRASH
+
     window.openMsgModal = function() { 
     // Show the modal
     document.getElementById('msg-modal').style.display = 'block'; 
@@ -595,8 +596,11 @@
     // Reset to List View (Hide Chat)
     document.getElementById('msg-list-view').style.display = 'block';
     document.getElementById('chat-view').style.display = 'none';
+
+    // Force a Refresh of the Winks List
+    loadWinks(); 
 };
-    
+
 
     
     window.toggleUserMenu = function() { let m = document.getElementById('user-dropdown'); m.style.display = m.style.display==='block'?'none':'block'; };
@@ -1002,6 +1006,7 @@ function openChatWrapper(name, elementId) {
 </script>
 </body>
 </html>
+
 
 
 
