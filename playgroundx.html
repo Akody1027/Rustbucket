@@ -397,12 +397,15 @@
             <div style="position: relative; width: 120px; height: 120px; margin: 0 auto;">
                 <img id="my-main-preview" src="https://via.placeholder.com/120" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent);">
                 <label for="main-up" style="position: absolute; bottom: 0; right: 0; background: var(--accent); width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 3px solid #000; color: white; font-size: 22px; font-weight: bold;">+</label>
-                <input type="file" id="main-up" hidden onchange="previewImg(event, 'my-main-preview')">
+                <input type="file" id="main-up" hidden onchange="previewMainAndGallery(event)">
             </div>
         </div>
 
         <div class="gallery-grid">
-            <div class="gallery-slot" style="border-color:var(--accent)"><label>★</label></div>
+            <div class="gallery-slot" style="border-color:var(--accent); position:relative; padding:0;">
+               <img id="g1-preview" src="" style="width:100%; height:100%; object-fit:cover; display:none;">
+               <label id="g1-lbl" style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; width:100%; height:100%;">★</label>
+            </div>
             <div class="gallery-slot"><input type="file" id="g2" hidden><label for="g2">+</label></div>
             <div class="gallery-slot"><input type="file" id="g3" hidden><label for="g3">+</label></div>
             <div class="gallery-slot"><input type="file" id="g4" hidden><label for="g4">+</label></div>
@@ -964,7 +967,51 @@ function loadMyProfile() {
 }
 
 // Run this immediately
+// --- NEW PREVIEW LOGIC (Updates Circle + Gallery Slot 1) ---
+function previewMainAndGallery(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function() {
+        const result = reader.result;
+
+        // 1. Update the Main Circle
+        document.getElementById('my-main-preview').src = result;
+
+        // 2. Update Gallery Slot 1
+        const g1 = document.getElementById('g1-preview');
+        g1.src = result;
+        g1.style.display = 'block'; // Show the image
+        document.getElementById('g1-lbl').style.display = 'none'; // Hide the star
+    };
+    reader.readAsDataURL(file);
+}
+
+// --- UPDATED STARTUP LOADER ---
+function loadMyProfile() {
+    const savedImg = localStorage.getItem('my_profile_pic');
+    
+    if (savedImg) {
+        // 1. Update Header Icon
+        const headerIcon = document.getElementById('user-icon-trigger');
+        headerIcon.innerHTML = `<img src="${savedImg}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+        headerIcon.style.border = '2px solid var(--accent)';
+
+        // 2. Update Edit Profile Circle
+        document.getElementById('my-main-preview').src = savedImg;
+
+        // 3. Update Gallery Slot 1
+        const g1 = document.getElementById('g1-preview');
+        g1.src = savedImg;
+        g1.style.display = 'block'; // Show image
+        document.getElementById('g1-lbl').style.display = 'none'; // Hide star
+    }
+}
+
+// Run immediately
 loadMyProfile();
+    
     
     
 
@@ -1006,6 +1053,7 @@ function openChatWrapper(name, elementId) {
 </script>
 </body>
 </html>
+
 
 
 
