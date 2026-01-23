@@ -799,27 +799,29 @@ function loadWinks() {
 
 
     function saveProfile() {
-    // 1. Save the Explicit setting (existing logic)
+    // 1. Save the Explicit setting
     localStorage.setItem('pgX_explicit', document.getElementById('p-explicit').checked);
 
-    // 2. Grab the image source from the Profile Preview
+    // 2. Grab the image source
     const newImgSrc = document.getElementById('my-main-preview').src;
 
     // 3. Update the Header Icon
     const headerIcon = document.getElementById('user-icon-trigger');
     
-    // Check if it's the default placeholder. If it's a real image, update the header.
+    // Check if it's a real image (not the placeholder)
     if (newImgSrc.includes('via.placeholder') === false) {
+        // --- THIS IS THE NEW LINE THAT MAKES IT STAY ---
+        localStorage.setItem('my_profile_pic', newImgSrc); 
+
         headerIcon.innerHTML = `<img src="${newImgSrc}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
-        headerIcon.style.border = '2px solid var(--accent)'; // Add a nice purple border
+        headerIcon.style.border = '2px solid var(--accent)';
     }
 
-    // 4. Close the modal and refresh the deck
+    // 4. Close modal
     document.getElementById('profile-modal').style.display = 'none';
     renderDeck();
 }
 
-    
 
 
     
@@ -897,7 +899,23 @@ function confirmYes() {
     closeConfirm(); // Close the popup
 }
 
+// --- LOAD MY PROFILE PIC ON STARTUP ---
+function loadMyProfile() {
+    const savedImg = localStorage.getItem('my_profile_pic');
+    if (savedImg) {
+        // Update the Header
+        const headerIcon = document.getElementById('user-icon-trigger');
+        headerIcon.innerHTML = `<img src="${savedImg}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+        headerIcon.style.border = '2px solid var(--accent)';
 
+        // Update the Edit Profile Preview too (so it remembers what you picked)
+        document.getElementById('my-main-preview').src = savedImg;
+    }
+}
+
+// Run this immediately
+loadMyProfile();
+    
     
     
 
@@ -905,6 +923,7 @@ function confirmYes() {
 </script>
 </body>
 </html>
+
 
 
 
