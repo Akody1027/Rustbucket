@@ -265,6 +265,56 @@
         .dropdown-menu { display: none; position: absolute; top: 60px; right: 20px; background: #222; border: 1px solid #444; border-radius: 8px; z-index: 8000; padding: 10px; width: 160px; }
         .dropdown-item { display: block; width: 100%; padding: 10px; color: white; text-align: left; background: none; border: none; border-bottom: 1px solid #333; }
         .dropdown-item:last-child { border: none; }
+
+
+
+/* --- RED TRASH CAN --- */
+.delete-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    margin-left: auto; /* Pushes to the right */
+    color: #FF4444; /* Bright Red */
+    z-index: 50;
+}
+.delete-btn:hover {
+    color: #ff8888; /* Lighter red on hover */
+    transform: scale(1.1);
+}
+.delete-btn svg {
+    width: 20px; height: 20px; stroke-width: 2;
+}
+
+/* --- CONFIRMATION POPUP STYLES --- */
+#confirm-modal {
+    display: none;
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8); z-index: 9000;
+    align-items: center; justify-content: center;
+}
+.confirm-box {
+    background: #1E1E1E; border: 1px solid #333;
+    padding: 25px; border-radius: 16px; text-align: center;
+    width: 80%; max-width: 300px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+}
+.confirm-btn-group {
+    display: flex; gap: 10px; margin-top: 20px;
+}
+.btn-yes {
+    flex: 1; background: #FF4444; color: white; border: none;
+    padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer;
+}
+.btn-no {
+    flex: 1; background: #333; color: white; border: none;
+    padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer;
+}
+
+
+
+
+        
     </style>
 </head>
 <body>
@@ -472,12 +522,23 @@
             <button class="tab-btn" onclick="openTab('tab-chats', this)">Messages</button>
         </div>
         <div id="tab-winks" class="tab-pane active"></div>
-        <div id="tab-chats" class="tab-pane">
-            <div class="msg-item" onclick="openChat('Jess_Vibes')">
-                <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100" class="msg-avatar">
-                <div><h3 style="margin:0;color:white;font-size:14px;">Jess_Vibes</h3><p style="margin:0;color:#888;font-size:12px;">Hey! Are you nearby?</p></div>
-            </div>
+
+<div id="tab-chats" class="tab-pane">
+    <div id="msg-jess" class="msg-item" onclick="openChat('Jess_Vibes')">
+        <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100" class="msg-avatar">
+        <div>
+            <h3 style="margin:0;color:white;font-size:14px;">Jess_Vibes</h3>
+            <p style="margin:0;color:#888;font-size:12px;">Hey! Are you nearby?</p>
         </div>
+        <button class="delete-btn" onclick="askToDelete(event, 'msg', 'msg-jess')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+        </button>
+    </div>
+</div>
+
+
+
+        
     </div>
 
     <div id="chat-view">
@@ -495,6 +556,21 @@
         </div>
     </div>
 </div>
+
+
+<div id="confirm-modal" style="display:none; display:flex;"> <div class="confirm-box">
+        <h3 style="color:white; margin-top:0;">Delete Item?</h3>
+        <p style="color:#aaa; font-size:14px;">Are you sure you want to remove this? This cannot be undone.</p>
+        <div class="confirm-btn-group">
+            <button class="btn-no" onclick="closeConfirm()">No</button>
+            <button class="btn-yes" onclick="confirmYes()">Yes, Delete</button>
+        </div>
+    </div>
+</div>
+
+
+
+    
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
@@ -668,16 +744,31 @@
         document.getElementById('msg-badge').innerText = c;
         document.getElementById('msg-badge').style.display = c > 0 ? 'flex' : 'none';
     }
-    function loadWinks() {
-        let users = JSON.parse(localStorage.getItem('pgX_users'));
-        let winks = users.filter(u => u.winkedAtMe);
-        document.getElementById('tab-winks').innerHTML = winks.map(u => `
-            <div class="msg-item" onclick="openUserProfile('${u.alias}', ${u.age}, '${u.img}', ${u.id}); document.getElementById('msg-modal').style.display='none'">
-                <img src="${u.img}" class="msg-avatar">
-                <div><h3 style="margin:0;color:white;font-size:14px;">${u.alias}</h3><p style="margin:0;color:#888;font-size:12px;">Winked at you!</p></div>
+
+
+
+function loadWinks() {
+    let users = JSON.parse(localStorage.getItem('pgX_users'));
+    let winks = users.filter(u => u.winkedAtMe);
+    
+    document.getElementById('tab-winks').innerHTML = winks.map(u => `
+        <div class="msg-item" onclick="openUserProfile('${u.alias}', ${u.age}, '${u.img}', ${u.id}); document.getElementById('msg-modal').style.display='none'">
+            <img src="${u.img}" class="msg-avatar">
+            <div>
+                <h3 style="margin:0;color:white;font-size:14px;">${u.alias}</h3>
+                <p style="margin:0;color:#888;font-size:12px;">Winked at you!</p>
             </div>
-        `).join('');
-    }
+            <button class="delete-btn" onclick="askToDelete(event, 'wink', ${u.id})">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+        </div>
+    `).join('');
+}
+
+
+    
+
+
     
     function openUserProfile(alias, age, imgUrl, id) {
         let users = JSON.parse(localStorage.getItem('pgX_users'));
@@ -740,12 +831,59 @@ document.getElementById('open-my-profile').addEventListener('click', function(e)
 });
     
 
+
+// --- NEW CONFIRMATION LOGIC ---
+
+let pendingDelete = null; // Stores what we are about to delete
+
+// 1. Initial Setup to hide the modal nicely
+document.getElementById('confirm-modal').style.display = 'none';
+
+// 2. Triggered when you click the Red Trash Can
+function askToDelete(event, type, id) {
+    event.stopPropagation(); // Stop it from opening the profile/chat
+    pendingDelete = { type: type, id: id }; // Remember what to delete
+    document.getElementById('confirm-modal').style.display = 'flex'; // Show popup
+}
+
+// 3. Triggered when you click "No"
+function closeConfirm() {
+    document.getElementById('confirm-modal').style.display = 'none';
+    pendingDelete = null;
+}
+
+// 4. Triggered when you click "Yes"
+function confirmYes() {
+    if (!pendingDelete) return;
+
+    if (pendingDelete.type === 'wink') {
+        // Delete Wink Logic
+        let users = JSON.parse(localStorage.getItem('pgX_users'));
+        let target = users.find(u => u.id === pendingDelete.id);
+        if (target) {
+            target.winkedAtMe = false;
+            localStorage.setItem('pgX_users', JSON.stringify(users));
+            loadWinks();
+            updateBadge();
+        }
+    } else if (pendingDelete.type === 'msg') {
+        // Delete Message Logic
+        const el = document.getElementById(pendingDelete.id);
+        if (el) el.remove();
+    }
+
+    closeConfirm(); // Close the popup
+}
+
+
+    
     
 
     initBackend();
 </script>
 </body>
 </html>
+
 
 
 
