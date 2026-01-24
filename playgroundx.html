@@ -7,14 +7,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
-    <script type="module">
-  // 1. Import the specific Firebase functions from the web (CDN)
+<script type="module">
+  // 1. Import specific functions
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
-  // We will need Firestore later for the database
-  import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  import { getFirestore, collection, doc, setDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-  // 2. Paste your specific keys from the screenshot
+  // 2. Your Keys
   const firebaseConfig = {
     apiKey: "AIzaSyDFmhk3ybnsVsFenCE3xvdmy5y_4u9ss7o", 
     authDomain: "playgroundx-ca021.firebaseapp.com",
@@ -25,16 +23,22 @@
     measurementId: "G-NEV8FYG0WK"
   };
 
-  // 3. Initialize the App
+  // 3. Initialize
   const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
   const db = getFirestore(app);
 
-  // 4. Make 'db' available to your existing javascript
+  // 4. EXPOSE TOOLS TO THE MAIN APP (This was the missing piece!)
   window.db = db;
-  
-  console.log("Firebase Connection Successful! ✅");
-    </script>
+  window.fbase = {
+      collection: collection,
+      doc: doc,
+      setDoc: setDoc,
+      getDocs: getDocs
+  };
+
+  console.log("Firebase Tools Ready ✅");
+</script>
+
     
 
     
@@ -746,48 +750,61 @@
     let activeDeck = [];
     let card, startX, currentX, btnLike, btnReject;
 
-    function renderDeck() {
-        let users = JSON.parse(localStorage.getItem('pgX_users'));
-        let filters = JSON.parse(localStorage.getItem('pgX_filters')) || {};
-        let showExplicit = localStorage.getItem('pgX_explicit') === 'true';
+async function renderDeck() {
+    const zone = document.getElementById('swipe-zone');
+    const grid = document.getElementById('grid-content');
+    
+    // 1. Try to get REAL users from Cloud
+    try {
+        // Check if we are online and have the tools
+        if(window.fbase) {
+            const { getDocs, collection } = window.fbase;
+            const querySnapshot = await getDocs(collection(window.db, "users"));
+            
+            let realUsers = [];
+            querySnapshot.forEach((doc) => {
+                realUsers.push(doc.data());
+            });
 
-        activeDeck = users.filter(u => {
-            if(u.seen) return false;
-            if(u.isExplicit && !showExplicit) return false;
-            if(filters.men && u.gender === 'Man') return true;
-            if(filters.women && u.gender === 'Woman') return true;
-            if(!filters.men && !filters.women) return true;
-            return false;
-        });
-
-        const zone = document.getElementById('swipe-zone');
-        const grid = document.getElementById('grid-content');
-        
-        if(activeDeck.length > 0) {
-            const u = activeDeck[0];
-            zone.innerHTML = `
-                <div class="swipe-card" id="active-card" onclick="openUserProfile('${u.alias}', ${u.age}, '${u.img}', ${u.id})">
-                    <img src="${u.img}" alt="User">
-                    <div class="card-header-overlay">
-                        <span class="card-alias">${u.alias}</span>
-                        <span class="card-age">${u.age}</span>
-                    </div>
-                </div>`;
-            setTimeout(initSwipeHandlers, 50); // Delay to ensure DOM is ready
-        } else {
-            zone.innerHTML = `<div style="text-align:center;color:#666;margin-top:100px;"><h3>No more profiles</h3><button onclick="resetSeen()">Reset Demo</button></div>`;
+            // If we found people in the cloud, use them!
+            if(realUsers.length > 0) {
+                // Filter out myself
+                let myUid = localStorage.getItem('pgX_myUid');
+                activeDeck = realUsers.filter(u => u.id !== myUid);
+            }
         }
-
-        // GRID
-        if(grid) {
-            grid.innerHTML = activeDeck.slice(0, 6).map(u => `
-                <div class="grid-item" onclick="openUserProfile('${u.alias}', ${u.age}, '${u.img}', ${u.id})">
-                    <img src="${u.img}" style="width:100%; height:100%; object-fit:cover;">
-                    <div class="grid-overlay"><span>${u.alias}</span><span>${u.age}</span></div>
-                </div>
-            `).join('');
-        }
+    } catch(e) {
+        console.log("Offline or Error loading cloud users:", e);
+        // If offline, activeDeck stays as whatever was in localStorage (Fallback)
     }
+
+    // 2. Render the Cards (Same visual logic as before)
+    if(activeDeck.length > 0) {
+        const u = activeDeck[0];
+        zone.innerHTML = `
+            <div class="swipe-card" id="active-card" onclick="openUserProfile('${u.alias}', ${u.age}, '${u.img}', '${u.id}')">
+                <img src="${u.img}" alt="User">
+                <div class="card-header-overlay">
+                    <span class="card-alias">${u.alias}</span>
+                    <span class="card-age">${u.age}</span>
+                </div>
+            </div>`;
+        setTimeout(initSwipeHandlers, 50); 
+    } else {
+        zone.innerHTML = `<div style="text-align:center;color:#666;margin-top:100px;"><h3>Searching...</h3><p>No other users found yet.</p></div>`;
+    }
+
+    // 3. Render Grid
+    if(grid) {
+        grid.innerHTML = activeDeck.map(u => `
+            <div class="grid-item" onclick="openUserProfile('${u.alias}', ${u.age}, '${u.img}', '${u.id}')">
+                <img src="${u.img}" style="width:100%; height:100%; object-fit:cover;">
+                <div class="grid-overlay"><span>${u.alias}</span><span>${u.age}</span></div>
+            </div>
+        `).join('');
+    }
+}
+
 
     function initSwipeHandlers() {
         card = document.getElementById('active-card');
@@ -1204,6 +1221,7 @@ function selectProfileOption(displayId, value, accordionId) {
 </script>
 </body>
 </html>
+
 
 
 
