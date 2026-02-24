@@ -133,9 +133,20 @@
             <button onclick="navigate(1)">Next</button>
         </div>
 
+
         <div class="search-wrapper">
-            <input type="text" id="searchInput" placeholder="Search across all 11 parts..." onkeydown="if(event.key === 'Enter') performGlobalSearch()">
-        </div>
+            <input type="text" id="searchInput" placeholder="Search (e.g. Headache)..." onkeydown="if(event.key === 'Enter') performGlobalSearch()">
+            
+            <span id="matchCounter" style="margin: 0 10px; font-size: 0.85rem; color: #334155; font-weight: bold;"></span>
+            <button id="prevMatchBtn" onclick="navigateMatch(-1)" disabled style="padding: 5px 10px;">&uarr;</button>
+            <button id="nextMatchBtn" onclick="navigateMatch(1)" disabled style="padding: 5px 10px;">&darr;</button>
+            </div>
+
+
+
+
+
+        
         <button onclick="performGlobalSearch()">Search</button>
     </div>
 
@@ -161,7 +172,10 @@
     let scale = .75;
     let isRendering = false;
     let pendingRender = null;
-
+    // --- SEARCH STATE ---
+    let searchResults = [];
+    let currentMatchIndex = -1;
+    
     // --- INITIALIZATION ---
     async function init() {
         const status = document.getElementById('systemStatus');
@@ -301,48 +315,98 @@
     
 
     // --- GLOBAL SEARCH LOGIC ---
+    // --- IMPROVED SEARCH: FIND ALL ---
     async function performGlobalSearch() {
         const query = document.getElementById('searchInput').value.trim().toLowerCase();
         if (!query) return;
 
         const status = document.getElementById('systemStatus');
-        status.innerText = `Scanning all 11 parts for "${query}"...`;
-        status.style.color = "#fde047"; // Yellow text for activity
+        const counter = document.getElementById('matchCounter');
+        
+        status.innerText = `Scanning all files...`;
+        counter.innerText = "Scanning...";
+        
+        // 1. Reset results
+        searchResults = [];
+        currentMatchIndex = -1;
+        document.getElementById('prevMatchBtn').disabled = true;
+        document.getElementById('nextMatchBtn').disabled = true;
 
-        let found = false;
-
-        // Loop through Parts
+        // 2. Scan every page
         for (let pIdx = 0; pIdx < docs.length; pIdx++) {
             const docData = docs[pIdx];
-            if (!docData) continue; // Skip failed loads
+            if (!docData) continue;
 
-            // Loop through Pages in this Part
             for (let pg = 1; pg <= docData.totalPages; pg++) {
-                // Optimization: Don't freeze UI
-                if (pg % 10 === 0) status.innerText = `Scanning Part ${docData.id}, Page ${pg}...`;
+                // UI Breather (prevents freezing)
+                if (pg % 20 === 0) await new Promise(r => setTimeout(r, 0));
                 
                 const page = await docData.pdf.getPage(pg);
                 const textContent = await page.getTextContent();
                 const textStr = textContent.items.map(s => s.str).join(' ').toLowerCase();
 
                 if (textStr.includes(query)) {
-                    // FOUND IT!
-                    currentPartIndex = pIdx;
-                    currentPageIndex = pg;
-                    renderCurrentPage();
-                    status.innerText = `Found "${query}" in Part ${docData.id}, Page ${pg}`;
-                    status.style.color = "#4ade80"; // Green text for success
-                    found = true;
-                    return; // Stop after first match
+                    // Store every match found
+                    searchResults.push({ partIndex: pIdx, pageIndex: pg });
                 }
             }
         }
+
+        // 3. Handle Results
+        if (searchResults.length > 0) {
+            status.innerText = `Found ${searchResults.length} matches.`;
+            document.getElementById('prevMatchBtn').disabled = false;
+            document.getElementById('nextMatchBtn').disabled = false;
+            // Jump to first match
+            navigateMatch(1); 
+        } else {
+            status.innerText = "No matches found.";
+            counter.innerText = "0 / 0";
+        }
+    }
+
+
+        
 
         if (!found) {
             status.innerText = `"${query}" not found in any file.`;
             status.style.color = "#f87171"; // Red text
         }
     }
+
+
+
+    function navigateMatch(direction) {
+        if (searchResults.length === 0) return;
+
+        // Move index forward or backward
+        // Note: The logic handles the initial state (-1) by starting at 0
+        if (currentMatchIndex === -1 && direction === 1) {
+            currentMatchIndex = 0;
+        } else {
+            currentMatchIndex += direction;
+        }
+
+        // Loop around if we hit the end
+        if (currentMatchIndex >= searchResults.length) currentMatchIndex = 0;
+        if (currentMatchIndex < 0) currentMatchIndex = searchResults.length - 1;
+
+        // Update UI Counter
+        document.getElementById('matchCounter').innerText = `${currentMatchIndex + 1} / ${searchResults.length}`;
+
+        // Jump to the specific PDF Part and Page
+        const match = searchResults[currentMatchIndex];
+        currentPartIndex = match.partIndex;
+        currentPageIndex = match.pageIndex;
+        renderCurrentPage();
+    }
+
+
+
+
+
+
+    
 
     // --- HIGHLIGHTER ---
     async function highlightTextOnPage(page, viewport, query) {
@@ -390,6 +454,7 @@
 
 </body>
 </html>
+
 
 
 
