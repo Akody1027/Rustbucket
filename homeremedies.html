@@ -140,14 +140,10 @@
             <span id="matchCounter" style="margin: 0 10px; font-size: 0.85rem; color: #334155; font-weight: bold;"></span>
             <button id="prevMatchBtn" onclick="navigateMatch(-1)" disabled style="padding: 5px 10px;">&uarr;</button>
             <button id="nextMatchBtn" onclick="navigateMatch(1)" disabled style="padding: 5px 10px;">&darr;</button>
-            </div>
-
-
-
-
-
+            <button onclick="performGlobalSearch()">Search</button>
+        </div>
         
-        <button onclick="performGlobalSearch()">Search</button>
+        
     </div>
 
     <div id="viewerContainer">
@@ -366,14 +362,6 @@
     }
 
 
-        
-
-        if (!found) {
-            status.innerText = `"${query}" not found in any file.`;
-            status.style.color = "#f87171"; // Red text
-        }
-    }
-
 
 
     function navigateMatch(direction) {
@@ -454,6 +442,7 @@
 
 </body>
 </html>
+
 
 
 
