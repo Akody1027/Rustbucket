@@ -3,16 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Playground X - Remedy Viewer</title>
+    <title>Playground X - Multi-Part Remedy Viewer</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
-        // Initialize PDF.js worker
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     </script>
     <style>
         :root {
             --primary: #2563eb;
-            --highlight: #fde047; /* Bright Yellow for highlights */
+            --highlight: #fde047;
             --bg: #1e293b;
             --panel: #f8fafc;
         }
@@ -28,15 +27,27 @@
             overflow: hidden;
         }
 
-        /* --- Top Bar (The "Code Editor" Search) --- */
+        /* --- Toolbar --- */
         .toolbar {
             background: white;
             padding: 1rem;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             display: flex;
-            gap: 10px;
+            gap: 15px;
             align-items: center;
             z-index: 10;
+        }
+
+        .nav-controls { display: flex; gap: 10px; align-items: center; }
+        
+        .page-badge {
+            background: #e2e8f0;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #334155;
+            white-space: nowrap;
         }
 
         .search-wrapper {
@@ -52,33 +63,34 @@
             border-radius: 8px;
             font-size: 16px;
             outline: none;
-            transition: border-color 0.2s;
         }
 
-        #searchInput:focus {
-            border-color: var(--primary);
-        }
+        #searchInput:focus { border-color: var(--primary); }
 
         button {
-            padding: 12px 24px;
+            padding: 10px 20px;
             background: var(--primary);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             font-weight: 600;
             cursor: pointer;
+            transition: opacity 0.2s;
         }
 
         button:disabled { opacity: 0.5; cursor: wait; }
+        button:hover:not(:disabled) { opacity: 0.9; }
 
-        .status {
-            color: #64748b;
-            font-size: 0.9rem;
-            margin-left: 15px;
-            font-weight: 500;
+        .status-bar {
+            background: #0f172a;
+            color: #94a3b8;
+            font-size: 0.8rem;
+            padding: 5px 20px;
+            text-align: right;
+            border-top: 1px solid #334155;
         }
 
-        /* --- Main Viewer Area --- */
+        /* --- Main Viewer --- */
         #viewerContainer {
             flex-grow: 1;
             overflow-y: auto;
@@ -86,38 +98,28 @@
             justify-content: center;
             padding: 2rem;
             position: relative;
+            background-color: #334155; /* Dark background for reading */
         }
 
         #pdfWrapper {
             position: relative;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            background: white;
         }
 
-        canvas {
-            display: block;
-            border-radius: 4px;
-        }
+        canvas { display: block; }
 
-        /* --- The Highlight Overlay Layer --- */
         #highlightLayer {
             position: absolute;
-            top: 0;
-            left: 0;
-            pointer-events: none; /* Let clicks pass through to PDF */
+            top: 0; left: 0;
+            pointer-events: none;
         }
 
         .highlight-box {
             position: absolute;
             background-color: var(--highlight);
-            opacity: 0.4; /* Transparent yellow */
+            opacity: 0.4;
             border: 1px solid #eab308;
-            border-radius: 2px;
-        }
-
-        /* Navigation Buttons */
-        .nav-controls {
-            display: flex;
-            gap: 10px;
         }
     </style>
 </head>
@@ -125,16 +127,15 @@
 
     <div class="toolbar">
         <div class="nav-controls">
-            <button onclick="changePage(-1)">Previous</button>
-            <span id="pageInfo" style="align-self: center; font-weight: bold; color: #334155;">Page 1</span>
-            <button onclick="changePage(1)">Next</button>
+            <button onclick="navigate(-1)">Previous</button>
+            <span id="partInfo" class="page-badge">Loading...</span>
+            <button onclick="navigate(1)">Next</button>
         </div>
 
         <div class="search-wrapper">
-            <input type="text" id="searchInput" placeholder="Search remedy (e.g. 'Headache' or 'Ginger')..." onkeydown="if(event.key === 'Enter') searchPDF()">
+            <input type="text" id="searchInput" placeholder="Search across all 11 parts..." onkeydown="if(event.key === 'Enter') performGlobalSearch()">
         </div>
-        <button onclick="searchPDF()">Search</button>
-        <div class="status" id="searchStatus">Ready</div>
+        <button onclick="performGlobalSearch()">Search</button>
     </div>
 
     <div id="viewerContainer">
@@ -144,184 +145,206 @@
         </div>
     </div>
 
+    <div class="status-bar" id="systemStatus">Initializing System...</div>
+
 <script>
     // --- CONFIGURATION ---
-    const url = 'Homeremedies.pdf'; // Ensure file name matches exactly
-    
-    let pdfDoc = null;
-    let pageNum = 1;
-    let pageRendering = false;
-    let pageNumPending = null;
-    let scale = 1.5; // Zoom level
-    const canvas = document.getElementById('the-canvas');
-    const ctx = canvas.getContext('2d');
-    const highlightLayer = document.getElementById('highlightLayer');
-    const statusDiv = document.getElementById('searchStatus');
+    // Generates filenames: Part_1_Homeremedies.pdf ... Part_11_Homeremedies.pdf
+    const totalParts = 11;
+    const filePattern = (n) => `Part_${n}_Homeremedies.pdf`;
 
-    // Load the PDF
-    pdfjsLib.getDocument(url).promise.then((pdfDoc_) => {
-        pdfDoc = pdfDoc_;
-        document.getElementById('pageInfo').innerText = `Page 1 of ${pdfDoc.numPages}`;
-        renderPage(pageNum);
-    }).catch(err => {
-        console.error("Error loading PDF:", err);
-        statusDiv.innerText = "Error: Could not load 'Homeremedies.pdf'. Is it in the same folder?";
-        statusDiv.style.color = "red";
-    });
+    // --- STATE ---
+    let docs = []; // Array to hold the loaded PDF document objects
+    let currentPartIndex = 0; // 0 to 10
+    let currentPageIndex = 1; // 1-based page number
+    let scale = 1.5;
+    let isRendering = false;
+    let pendingRender = null;
 
-    /**
-     * Render the page and the highlight layer
-     */
-    function renderPage(num) {
-        pageRendering = true;
+    // --- INITIALIZATION ---
+    async function init() {
+        const status = document.getElementById('systemStatus');
+        const partInfo = document.getElementById('partInfo');
         
-        // 1. Fetch Page
-        pdfDoc.getPage(num).then((page) => {
+        status.innerText = `Loading ${totalParts} PDF parts into memory...`;
+        
+        try {
+            // Load all documents sequentially to ensure order
+            for (let i = 1; i <= totalParts; i++) {
+                const filename = filePattern(i);
+                try {
+                    const doc = await pdfjsLib.getDocument(filename).promise;
+                    docs.push({
+                        id: i,
+                        filename: filename,
+                        pdf: doc,
+                        totalPages: doc.numPages
+                    });
+                    partInfo.innerText = `Loaded Part ${i}/${totalParts}`;
+                } catch (e) {
+                    console.error(`Failed to load ${filename}`, e);
+                    docs.push(null); // Placeholder for failed load
+                }
+            }
+
+            status.innerText = "Ready. 11 Parts Loaded.";
+            renderCurrentPage();
+
+        } catch (error) {
+            console.error(error);
+            status.innerText = "Critical Error: Could not load PDFs.";
+        }
+    }
+
+    // --- NAVIGATION LOGIC ---
+    function navigate(offset) {
+        if (isRendering) return;
+
+        const currentDoc = docs[currentPartIndex];
+        const newPage = currentPageIndex + offset;
+
+        // 1. Simple page turn within current doc
+        if (newPage >= 1 && newPage <= currentDoc.totalPages) {
+            currentPageIndex = newPage;
+            renderCurrentPage();
+            return;
+        }
+
+        // 2. Jump to Previous Part (End)
+        if (newPage < 1) {
+            if (currentPartIndex > 0) {
+                currentPartIndex--;
+                // Go to the last page of the previous part
+                currentPageIndex = docs[currentPartIndex].totalPages;
+                renderCurrentPage();
+            }
+            return;
+        }
+
+        // 3. Jump to Next Part (Start)
+        if (newPage > currentDoc.totalPages) {
+            if (currentPartIndex < docs.length - 1) {
+                currentPartIndex++;
+                currentPageIndex = 1;
+                renderCurrentPage();
+            }
+            return;
+        }
+    }
+
+    // --- RENDERING LOGIC ---
+    function renderCurrentPage() {
+        isRendering = true;
+        const docObj = docs[currentPartIndex];
+        
+        // Update UI
+        document.getElementById('partInfo').innerText = `Part ${docObj.id} - Page ${currentPageIndex}/${docObj.totalPages}`;
+        document.getElementById('systemStatus').innerText = `Viewing: ${docObj.filename}`;
+
+        docObj.pdf.getPage(currentPageIndex).then(page => {
+            const canvas = document.getElementById('the-canvas');
+            const ctx = canvas.getContext('2d');
             const viewport = page.getViewport({scale: scale});
+
             canvas.height = viewport.height;
             canvas.width = viewport.width;
-            
-            // Adjust overlay layer size to match
+
+            // Adjust highlight layer
+            const highlightLayer = document.getElementById('highlightLayer');
             highlightLayer.style.width = `${viewport.width}px`;
             highlightLayer.style.height = `${viewport.height}px`;
-            highlightLayer.innerHTML = ''; // Clear previous highlights
+            highlightLayer.innerHTML = ''; // Clear old highlights
 
-            // 2. Render PDF to Canvas
             const renderContext = {
                 canvasContext: ctx,
                 viewport: viewport
             };
-            const renderTask = page.render(renderContext);
 
-            // Wait for render to finish
-            renderTask.promise.then(() => {
-                pageRendering = false;
-                if (pageNumPending !== null) {
-                    renderPage(pageNumPending);
-                    pageNumPending = null;
-                }
+            page.render(renderContext).promise.then(() => {
+                isRendering = false;
                 
-                // 3. Re-apply highlights if a search term exists
-                const searchTerm = document.getElementById('searchInput').value;
-                if(searchTerm.length > 2) {
-                    highlightTextOnPage(page, viewport, searchTerm);
-                }
+                // Re-apply highlight if search term exists
+                const query = document.getElementById('searchInput').value;
+                if(query.length > 2) highlightTextOnPage(page, viewport, query);
             });
         });
-
-        // Update Page Counters
-        document.getElementById('pageInfo').innerText = `Page ${num} of ${pdfDoc.numPages}`;
     }
 
-    /**
-     * Navigation Logic
-     */
-    function queueRenderPage(num) {
-        if (pageRendering) {
-            pageNumPending = num;
-        } else {
-            renderPage(num);
-        }
-    }
-
-    function changePage(offset) {
-        if (pageNum + offset >= 1 && pageNum + offset <= pdfDoc.numPages) {
-            pageNum += offset;
-            queueRenderPage(pageNum);
-        }
-    }
-
-    /**
-     * SEARCH LOGIC: The "Code Editor" Feature
-     */
-    async function searchPDF() {
+    // --- GLOBAL SEARCH LOGIC ---
+    async function performGlobalSearch() {
         const query = document.getElementById('searchInput').value.trim().toLowerCase();
         if (!query) return;
 
-        statusDiv.innerText = "Scanning 300 pages... (Please wait)";
-        
-        // Loop through all pages to find the first match
-        // Note: For a production app, we would index this once at startup.
-        // For a single file, we scan on demand.
-        
+        const status = document.getElementById('systemStatus');
+        status.innerText = `Scanning all 11 parts for "${query}"...`;
+        status.style.color = "#fde047"; // Yellow text for activity
+
         let found = false;
 
-        for (let i = 1; i <= pdfDoc.numPages; i++) {
-            const page = await pdfDoc.getPage(i);
-            const textContent = await page.getTextContent();
-            const textItems = textContent.items;
-            
-            // Combine text items to check for the phrase
-            const pageText = textItems.map(item => item.str).join(' ').toLowerCase();
-            
-            if (pageText.includes(query)) {
-                pageNum = i;
-                queueRenderPage(pageNum);
-                statusDiv.innerText = `Found "${query}" on Page ${i}`;
-                found = true;
-                break; // Stop at first match
+        // Loop through Parts
+        for (let pIdx = 0; pIdx < docs.length; pIdx++) {
+            const docData = docs[pIdx];
+            if (!docData) continue; // Skip failed loads
+
+            // Loop through Pages in this Part
+            for (let pg = 1; pg <= docData.totalPages; pg++) {
+                // Optimization: Don't freeze UI
+                if (pg % 10 === 0) status.innerText = `Scanning Part ${docData.id}, Page ${pg}...`;
+                
+                const page = await docData.pdf.getPage(pg);
+                const textContent = await page.getTextContent();
+                const textStr = textContent.items.map(s => s.str).join(' ').toLowerCase();
+
+                if (textStr.includes(query)) {
+                    // FOUND IT!
+                    currentPartIndex = pIdx;
+                    currentPageIndex = pg;
+                    renderCurrentPage();
+                    status.innerText = `Found "${query}" in Part ${docData.id}, Page ${pg}`;
+                    status.style.color = "#4ade80"; // Green text for success
+                    found = true;
+                    return; // Stop after first match
+                }
             }
         }
 
         if (!found) {
-            statusDiv.innerText = `"${query}" not found in document.`;
+            status.innerText = `"${query}" not found in any file.`;
+            status.style.color = "#f87171"; // Red text
         }
     }
 
-    /**
-     * HIGHLIGHT LOGIC: Coordinate Mapping
-     */
+    // --- HIGHLIGHTER ---
     async function highlightTextOnPage(page, viewport, query) {
         const textContent = await page.getTextContent();
         const textItems = textContent.items;
         const searchStr = query.toLowerCase();
+        const highlightLayer = document.getElementById('highlightLayer');
 
-        // Loop through every text snippet on the page
         for (let i = 0; i < textItems.length; i++) {
             const item = textItems[i];
-            const itemStr = item.str.toLowerCase();
-
-            if (itemStr.includes(searchStr)) {
-                // We found the word! Now we need its coordinates.
-                // PDF.js gives coordinates in [x, y, w, h] usually via transform matrix
-                
-                // item.transform is [scaleX, skewY, skewX, scaleY, x, y]
-                // PDF coordinates start from Bottom-Left, HTML is Top-Left. 
-                // Viewport.convertToViewportRectangle handles this math for us.
-                
-                // We estimate width/height based on font size if width isn't explicit
+            if (item.str.toLowerCase().includes(searchStr)) {
                 const tx = item.transform;
-                
-                // Construct a rectangle for the word. 
-                // Note: accurate width calculation is complex, we will approximate for the visual effect
+                // Approximate width/height if not provided by PDF
                 const fontHeight = Math.sqrt(tx[2] * tx[2] + tx[3] * tx[3]);
-                const fontWidth = item.width; 
-                
-                // PDF Rect: [x, y, x + w, y + h]
-                // Note: PDF y is 0 at bottom.
                 const pdfRect = [
-                    tx[4], 
-                    tx[5], 
+                    tx[4], tx[5], 
                     tx[4] + item.width, 
-                    tx[5] + (item.height || fontHeight) // Use font height if item height is 0
+                    tx[5] + (item.height || fontHeight)
                 ];
-
-                // Convert to Canvas Coordinates
-                const rect = viewport.convertToViewportRectangle(pdfRect);
                 
-                // Create the Highlight Div
-                // rect is [x1, y1, x2, y2]
+                const rect = viewport.convertToViewportRectangle(pdfRect);
                 const div = document.createElement('div');
                 div.className = 'highlight-box';
                 
-                // Calculate position (Normalization for HTML coordinate system)
+                // Normalization
                 const x = Math.min(rect[0], rect[2]);
                 const y = Math.min(rect[1], rect[3]);
                 const w = Math.abs(rect[0] - rect[2]);
                 const h = Math.abs(rect[1] - rect[3]);
 
                 div.style.left = `${x}px`;
-                div.style.top = `${y - h}px`; // Adjust for baseline
+                div.style.top = `${y - h}px`; 
                 div.style.width = `${w}px`;
                 div.style.height = `${h}px`;
 
@@ -329,6 +352,10 @@
             }
         }
     }
+
+    // Start the engine
+    window.onload = init;
+
 </script>
 
 </body>
