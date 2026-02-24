@@ -105,6 +105,8 @@
             position: relative;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
             background: white;
+
+            margin-bottom: 50px;
         }
 
         canvas { display: block; }
@@ -157,7 +159,7 @@
     let docs = []; // Array to hold the loaded PDF document objects
     let currentPartIndex = 0; // 0 to 10
     let currentPageIndex = 1; // 1-based page number
-    let scale = .85;
+    let scale = .80;
     let isRendering = false;
     let pendingRender = null;
 
@@ -389,6 +391,7 @@
 
 </body>
 </html>
+
 
 
 
