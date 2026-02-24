@@ -233,42 +233,71 @@
     }
 
     // --- RENDERING LOGIC ---
+
+    // --- HIGH-DEF RENDERING LOGIC ---
     function renderCurrentPage() {
         isRendering = true;
         const docObj = docs[currentPartIndex];
         
-        // Update UI
-        document.getElementById('partInfo').innerText = `Part ${docObj.id} - Page ${currentPageIndex}/${docObj.totalPages}`;
-        document.getElementById('systemStatus').innerText = `Viewing: ${docObj.filename}`;
-
+        document.getElementById('partInfo').innerText = `Part ${docObj.id} - Pg ${currentPageIndex}/${docObj.totalPages}`;
+        
         docObj.pdf.getPage(currentPageIndex).then(page => {
             const canvas = document.getElementById('the-canvas');
             const ctx = canvas.getContext('2d');
-            const viewport = page.getViewport({scale: scale});
+            const wrapper = document.getElementById('pdfWrapper');
+            const container = document.getElementById('viewerContainer');
 
-            canvas.height = viewport.height;
-            canvas.width = viewport.width;
+            // 1. Get the device pixel ratio (1 for standard, 2 or 3 for Retina/4K)
+            const dpr = window.devicePixelRatio || 1;
 
-            // Adjust highlight layer
+            // 2. Calculate available width 
+            let availableWidth = container.clientWidth - 40; 
+            if (availableWidth > 1000) availableWidth = 1000;
+
+            // 3. Get unscaled viewport
+            const unscaledViewport = page.getViewport({ scale: 1 });
+            
+            // 4. Calculate scale to fit width
+            const scaleFactor = availableWidth / unscaledViewport.width;
+            
+            // 5. Create viewport for CSS dimensions (what you see)
+            const viewport = page.getViewport({ scale: scaleFactor });
+
+            // 6. Set Canvas dimensions:
+            // CSS width/height = logical size (for layout)
+            canvas.style.width = `${Math.floor(viewport.width)}px`;
+            canvas.style.height = `${Math.floor(viewport.height)}px`;
+            
+            // Internal width/height = multiplied by DPR (for sharpness)
+            canvas.width = Math.floor(viewport.width * dpr);
+            canvas.height = Math.floor(viewport.height * dpr);
+
+            // 7. Adjust highlights layer to match CSS size
             const highlightLayer = document.getElementById('highlightLayer');
-            highlightLayer.style.width = `${viewport.width}px`;
-            highlightLayer.style.height = `${viewport.height}px`;
-            highlightLayer.innerHTML = ''; // Clear old highlights
+            highlightLayer.style.width = `${Math.floor(viewport.width)}px`;
+            highlightLayer.style.height = `${Math.floor(viewport.height)}px`;
+            highlightLayer.innerHTML = '';
 
+            // 8. Render with transform to account for high-DPI
             const renderContext = {
                 canvasContext: ctx,
-                viewport: viewport
+                viewport: viewport,
+                transform: [dpr, 0, 0, dpr, 0, 0] // Magic sauce for sharpness
             };
 
             page.render(renderContext).promise.then(() => {
                 isRendering = false;
-                
-                // Re-apply highlight if search term exists
                 const query = document.getElementById('searchInput').value;
                 if(query.length > 2) highlightTextOnPage(page, viewport, query);
             });
         });
     }
+
+
+
+
+
+    
 
     // --- GLOBAL SEARCH LOGIC ---
     async function performGlobalSearch() {
@@ -360,5 +389,6 @@
 
 </body>
 </html>
+
 
 
