@@ -249,6 +249,11 @@
         });
     }
 
+
+
+
+
+    
     async function renderPage(globalIndex, containerDiv) {
         const canvas = containerDiv.querySelector('canvas');
         
@@ -262,15 +267,21 @@
             const page = await map.doc.getPage(map.pageIndex);
             const ctx = canvas.getContext('2d');
             
-            // Responsive width
+            // --- FIX STARTS HERE ---
             const dpr = window.devicePixelRatio || 1;
-            const containerWidth = document.getElementById('scrollWindow').clientWidth - 30; // margins
-            const maxW = 1000;
-            const finalW = Math.min(containerWidth, maxW);
+            
+            // 1. Get container width, but FORCE a minimum of 320px to prevent glitching
+            const scrollWindow = document.getElementById('scrollWindow');
+            const rawWidth = scrollWindow.clientWidth - 30; // margins
+            const safeWidth = Math.max(rawWidth, 320); // Safety Net
+            
+            // 2. Cap max width at 1000px
+            const finalW = Math.min(safeWidth, 1000);
 
             const unscaledViewport = page.getViewport({ scale: 1 });
             const scale = finalW / unscaledViewport.width;
             const viewport = page.getViewport({ scale: scale });
+            // --- FIX ENDS HERE ---
 
             canvas.width = Math.floor(viewport.width * dpr);
             canvas.height = Math.floor(viewport.height * dpr);
@@ -295,6 +306,12 @@
         }
     }
 
+
+
+
+
+
+    
     // --- SCROLL SPY ---
     function updatePageIndicator() {
         // Find which page is currently centered
@@ -423,3 +440,4 @@
 
 </body>
 </html>
+
