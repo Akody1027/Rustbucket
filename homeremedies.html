@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Playground X - Remedy Viewer</title>
+    <title>Playground X - Remedy Feed</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -14,7 +14,6 @@
             --highlight: #fde047;
             --bg: #1e293b;
             --glass: rgba(255, 255, 255, 0.95);
-            --shadow: 0 4px 20px rgba(0,0,0,0.15);
         }
 
         body {
@@ -22,12 +21,12 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background-color: var(--bg);
             height: 100vh;
-            overflow: hidden; /* Prevent body scroll, we scroll the container */
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
 
-        /* --- 1. TOP SEARCH BAR (Fixed) --- */
+        /* --- TOP SEARCH (Fixed) --- */
         .top-bar {
             position: fixed;
             top: 0; left: 0; right: 0;
@@ -37,22 +36,8 @@
             z-index: 100;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .search-row-1 {
-            display: flex;
-            gap: 8px;
-            width: 100%;
-        }
-
-        .search-row-2 {
-            display: flex;
-            justify-content: space-between;
+            gap: 10px;
             align-items: center;
-            font-size: 0.8rem;
-            color: #64748b;
         }
 
         #searchInput {
@@ -64,69 +49,53 @@
             outline: none;
             background: #f8fafc;
         }
-        #searchInput:focus { border-color: var(--primary); background: white; }
-
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 25px;
-            padding: 0 20px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .match-controls {
-            display: flex;
-            gap: 5px;
-            align-items: center;
-        }
 
         .btn-icon {
-            background: #e2e8f0;
-            border: none;
-            border-radius: 50%;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 18px;
-            color: #334155;
+            background: #e2e8f0; border: none; border-radius: 50%;
+            width: 36px; height: 36px; display: flex; align-items: center;
+            justify-content: center; cursor: pointer; font-size: 18px; color: #334155;
         }
         .btn-icon:disabled { opacity: 0.3; }
+        .btn-primary { background: var(--primary); color: white; }
 
-        /* --- 2. MAIN VIEWER --- */
-        #viewerContainer {
+        /* --- SCROLL CONTAINER --- */
+        #scrollWindow {
             flex-grow: 1;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
-            padding-top: 100px; /* Space for top bar */
-            padding-bottom: 100px; /* Space for bottom bar */
-            display: flex;
-            justify-content: center;
+            padding-top: 80px; /* Space for header */
+            padding-bottom: 80px;
             background-color: #334155;
+            position: relative;
         }
 
-        #pdfWrapper {
-            position: relative;
-            background: white;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            /* Initial size, JS will adjust */
+        /* The long strip that holds pages */
+        #feedContainer {
             width: 100%;
             max-width: 1000px;
-            align-self: flex-start; 
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* Individual Page Container (The Placeholder) */
+        .page-container {
+            width: 95%;
+            background: white;
+            min-height: 400px; /* Placeholder height before load */
+            position: relative;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
 
         canvas { display: block; width: 100%; height: auto; }
 
-        #highlightLayer {
-            position: absolute;
-            top: 0; left: 0;
+        /* Highlights */
+        .highlight-layer {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
             pointer-events: none;
         }
-
         .highlight-box {
             position: absolute;
             background-color: var(--highlight);
@@ -134,52 +103,23 @@
             border: 1px solid #eab308;
         }
 
-        /* --- 3. BOTTOM FLOATING NAV --- */
-        .bottom-nav {
+        /* --- BOTTOM FLOATING INFO --- */
+        .bottom-float {
             position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
+            bottom: 20px; left: 50%; transform: translateX(-50%);
             background: var(--glass);
             backdrop-filter: blur(10px);
-            padding: 10px 20px;
-            border-radius: 50px;
-            box-shadow: var(--shadow);
-            display: flex;
-            align-items: center;
-            gap: 15px;
+            padding: 8px 20px;
+            border-radius: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            font-weight: bold; color: #334155; font-size: 0.9rem;
             z-index: 100;
-            white-space: nowrap;
+            pointer-events: none; /* Let clicks pass through */
         }
-
-        .page-badge {
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: #334155;
-            min-width: 80px;
-            text-align: center;
-        }
-
-        .btn-nav {
-            background: var(--primary);
-            color: white;
-            border: none;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            font-size: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        .btn-nav:active { transform: scale(0.95); }
 
         /* Loading Bar */
         #loadingBar {
-            position: fixed;
-            top: 0; left: 0; height: 3px; background: #22c55e;
+            position: fixed; top: 0; left: 0; height: 3px; background: #22c55e;
             width: 0%; transition: width 0.3s; z-index: 101;
         }
     </style>
@@ -189,32 +129,18 @@
     <div id="loadingBar"></div>
 
     <div class="top-bar">
-        <div class="search-row-1">
-            <input type="text" id="searchInput" placeholder="Search remedies..." onkeydown="if(event.key === 'Enter') performGlobalSearch()">
-            <button class="btn-primary" onclick="performGlobalSearch()">Go</button>
-        </div>
-        <div class="search-row-2">
-            <span id="systemStatus" style="flex-grow:1;">Loading...</span>
-            <div class="match-controls">
-                <span id="matchCounter" style="margin-right:8px; font-weight:bold;"></span>
-                <button class="btn-icon" id="prevMatchBtn" onclick="navigateMatch(-1)" disabled>&uarr;</button>
-                <button class="btn-icon" id="nextMatchBtn" onclick="navigateMatch(1)" disabled>&darr;</button>
+        <input type="text" id="searchInput" placeholder="Search remedies..." onkeydown="if(event.key === 'Enter') performGlobalSearch()">
+        <button class="btn-icon btn-primary" onclick="performGlobalSearch()">&#128269;</button> <span id="matchCounter" style="font-size: 0.8rem; font-weight: bold; white-space: nowrap;"></span>
+        <button class="btn-icon" id="prevMatchBtn" onclick="navigateMatch(-1)" disabled>&uarr;</button>
+        <button class="btn-icon" id="nextMatchBtn" onclick="navigateMatch(1)" disabled>&darr;</button>
+    </div>
+
+    <div id="scrollWindow">
+        <div id="feedContainer">
             </div>
-        </div>
     </div>
 
-    <div id="viewerContainer">
-        <div id="pdfWrapper">
-            <canvas id="the-canvas"></canvas>
-            <div id="highlightLayer"></div>
-        </div>
-    </div>
-
-    <div class="bottom-nav">
-        <button class="btn-nav" onclick="navigate(-1)">&larr;</button>
-        <span id="partInfo" class="page-badge">Pg 1</span>
-        <button class="btn-nav" onclick="navigate(1)">&rarr;</button>
-    </div>
+    <div class="bottom-float" id="pageIndicator">Loading...</div>
 
 <script>
     // --- CONFIGURATION ---
@@ -222,159 +148,134 @@
     const filePattern = (n) => `Part_${n}_Homeremedies.pdf`;
 
     // --- STATE ---
-    // We pre-fill the array with nulls so we can load them out of order if needed
     let docs = new Array(totalParts).fill(null); 
-    let currentPartIndex = 0;
-    let currentPageIndex = 1;
-    let isRendering = false;
+    let pageMap = []; // Maps Global Page # to { docIndex, pageIndex }
+    let totalGlobalPages = 0;
+    let observer; 
+    
+    // Search State
     let searchResults = [];
     let currentMatchIndex = -1;
-    let totalLoaded = 0;
 
-    // --- INITIALIZATION (Progressive Loading) ---
+    // --- INIT ---
     async function init() {
-        const status = document.getElementById('systemStatus');
+        const loadingBar = document.getElementById('loadingBar');
+        loadingBar.style.width = "10%";
         
-        // 1. Load Part 1 IMMEDIATELY so user can read
-        status.innerText = "Opening Book...";
-        await loadPart(0); // Load index 0 (Part 1)
+        // 1. Setup Intersection Observer (The "Buffer" Logic)
+        // rootMargin: '2000px' means "Start loading images 2000px before they appear on screen"
+        let options = {
+            root: document.getElementById('scrollWindow'),
+            rootMargin: '2000px 0px 2000px 0px', 
+            threshold: 0.01
+        };
         
-        // 2. Render Page 1 immediately
-        if(docs[0]) {
-            renderCurrentPage();
-            status.innerText = "Indexing remaining pages...";
-        } else {
-            status.innerText = "Error loading Part 1.";
-            return;
-        }
+        observer = new IntersectionObserver(handleIntersection, options);
 
-        // 3. Load the rest in the background
-        loadRemainingParts();
+        // 2. Load Docs Metadata (Progressive)
+        await loadAllDocsMetadata();
         
-        // 4. Resize listener
-        window.addEventListener('resize', () => {
-            if(!isRendering) renderCurrentPage();
+        // 3. Build Skeleton UI
+        buildSkeleton();
+        
+        loadingBar.style.width = "100%";
+        setTimeout(() => loadingBar.style.width = "0%", 500);
+        
+        // 4. Update Page Indicator on Scroll
+        document.getElementById('scrollWindow').addEventListener('scroll', updatePageIndicator);
+    }
+
+    async function loadAllDocsMetadata() {
+        // We need to know how many pages are in each PDF to build the skeleton
+        for (let i = 0; i < totalParts; i++) {
+            const filename = filePattern(i + 1);
+            try {
+                const doc = await pdfjsLib.getDocument(filename).promise;
+                docs[i] = doc;
+                
+                // Map every page of this doc to a global index
+                for(let p=1; p<=doc.numPages; p++) {
+                    pageMap.push({ docIndex: i, pageIndex: p, doc: doc });
+                }
+                totalGlobalPages += doc.numPages;
+            } catch (e) {
+                console.error(`Error loading ${filename}`, e);
+            }
+        }
+    }
+
+    function buildSkeleton() {
+        const container = document.getElementById('feedContainer');
+        container.innerHTML = '';
+
+        // Create empty divs for every single page
+        for (let i = 0; i < totalGlobalPages; i++) {
+            const div = document.createElement('div');
+            div.className = 'page-container';
+            div.id = `page-${i}`;
+            div.dataset.globalIndex = i;
+            
+            // Add canvas placeholder
+            const canvas = document.createElement('canvas');
+            div.appendChild(canvas);
+            
+            // Add Highlight Layer
+            const hl = document.createElement('div');
+            hl.className = 'highlight-layer';
+            hl.id = `hl-${i}`;
+            div.appendChild(hl);
+
+            container.appendChild(div);
+            
+            // Tell observer to watch this div
+            observer.observe(div);
+        }
+    }
+
+    // --- THE BUFFER LOGIC ---
+    function handleIntersection(entries, observer) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                // Page is near viewport -> RENDER
+                const div = entry.target;
+                const index = parseInt(div.dataset.globalIndex);
+                renderPage(index, div);
+            } else {
+                // Optional: Page is far away -> UNLOAD (to save memory)
+                // For modern phones, 300 pages might hold in memory, but clearing canvas is safer
+                // To keep it simple/smooth, we won't aggressively unload yet, 
+                // but this is where you'd clear the canvas width/height to 0.
+            }
         });
     }
 
-    async function loadPart(index) {
-        const partNum = index + 1;
-        const filename = filePattern(partNum);
+    async function renderPage(globalIndex, containerDiv) {
+        const canvas = containerDiv.querySelector('canvas');
+        
+        // If already rendered, skip
+        if (canvas.getAttribute('data-rendered') === 'true') return;
+        
+        const map = pageMap[globalIndex];
+        if (!map) return;
+
         try {
-            const doc = await pdfjsLib.getDocument(filename).promise;
-            docs[index] = {
-                id: partNum,
-                filename: filename,
-                pdf: doc,
-                totalPages: doc.numPages
-            };
-            totalLoaded++;
-            updateProgressBar();
-            return true;
-        } catch (e) {
-            console.error(`Failed to load ${filename}`, e);
-            docs[index] = { error: true, totalPages: 0 }; // Mark as failed but don't break loop
-            return false;
-        }
-    }
-
-    async function loadRemainingParts() {
-        for (let i = 1; i < totalParts; i++) {
-            await loadPart(i);
-            // Optional: slight delay to keep UI responsive on very slow phones
-            await new Promise(r => setTimeout(r, 50));
-        }
-        document.getElementById('systemStatus').innerText = "Ready. Search available.";
-        setTimeout(() => { document.getElementById('loadingBar').style.width = '0%'; }, 500);
-    }
-
-    function updateProgressBar() {
-        const pct = (totalLoaded / totalParts) * 100;
-        document.getElementById('loadingBar').style.width = `${pct}%`;
-    }
-
-    // --- NAVIGATION LOGIC ---
-    function navigate(offset) {
-        if (isRendering) return;
-
-        // Check if current doc is loaded
-        let currentDoc = docs[currentPartIndex];
-        if (!currentDoc || currentDoc.error) return;
-
-        const newPage = currentPageIndex + offset;
-
-        // 1. Simple page turn within current doc
-        if (newPage >= 1 && newPage <= currentDoc.totalPages) {
-            currentPageIndex = newPage;
-            renderCurrentPage();
-            return;
-        }
-
-        // 2. Jump to Previous Part
-        if (newPage < 1) {
-            if (currentPartIndex > 0) {
-                // Check if previous part is ready
-                if (!docs[currentPartIndex - 1]) {
-                    alert("Previous chapter is still loading...");
-                    return;
-                }
-                currentPartIndex--;
-                currentPageIndex = docs[currentPartIndex].totalPages;
-                renderCurrentPage();
-            }
-            return;
-        }
-
-        // 3. Jump to Next Part
-        if (newPage > currentDoc.totalPages) {
-            if (currentPartIndex < totalParts - 1) {
-                // Check if next part is ready
-                if (!docs[currentPartIndex + 1]) {
-                    alert("Next chapter is still loading...");
-                    return;
-                }
-                currentPartIndex++;
-                currentPageIndex = 1;
-                renderCurrentPage();
-            }
-            return;
-        }
-    }
-
-    // --- RENDER LOGIC (Responsive) ---
-    function renderCurrentPage() {
-        isRendering = true;
-        const docObj = docs[currentPartIndex];
-        
-        if(!docObj) return;
-
-        document.getElementById('partInfo').innerText = `Pt ${docObj.id} • Pg ${currentPageIndex}`;
-        
-        docObj.pdf.getPage(currentPageIndex).then(page => {
-            const canvas = document.getElementById('the-canvas');
+            const page = await map.doc.getPage(map.pageIndex);
             const ctx = canvas.getContext('2d');
-            const container = document.getElementById('viewerContainer');
-
-            // High DPI & Responsive Logic
+            
+            // Responsive width
             const dpr = window.devicePixelRatio || 1;
-            let availableWidth = container.clientWidth - 20; // 20px padding
-            if (availableWidth > 1000) availableWidth = 1000; // Max width cap
+            const containerWidth = document.getElementById('scrollWindow').clientWidth - 30; // margins
+            const maxW = 1000;
+            const finalW = Math.min(containerWidth, maxW);
 
             const unscaledViewport = page.getViewport({ scale: 1 });
-            const scaleFactor = availableWidth / unscaledViewport.width;
-            const viewport = page.getViewport({ scale: scaleFactor });
+            const scale = finalW / unscaledViewport.width;
+            const viewport = page.getViewport({ scale: scale });
 
-            // Set dimensions
-            canvas.style.width = `${Math.floor(viewport.width)}px`;
-            canvas.style.height = `${Math.floor(viewport.height)}px`;
             canvas.width = Math.floor(viewport.width * dpr);
             canvas.height = Math.floor(viewport.height * dpr);
-
-            // Reset Highlights
-            const highlightLayer = document.getElementById('highlightLayer');
-            highlightLayer.style.width = `${Math.floor(viewport.width)}px`;
-            highlightLayer.style.height = `${Math.floor(viewport.height)}px`;
-            highlightLayer.innerHTML = '';
+            canvas.style.width = `${Math.floor(viewport.width)}px`;
+            canvas.style.height = `${Math.floor(viewport.height)}px`;
 
             const renderContext = {
                 canvasContext: ctx,
@@ -382,120 +283,139 @@
                 transform: [dpr, 0, 0, dpr, 0, 0]
             };
 
-            page.render(renderContext).promise.then(() => {
-                isRendering = false;
-                container.scrollTop = 0; // Scroll to top on page change
-                
-                // Re-apply highlight if needed
-                if(currentMatchIndex !== -1) {
-                    const match = searchResults[currentMatchIndex];
-                    if(match.partIndex === currentPartIndex && match.pageIndex === currentPageIndex) {
-                        const query = document.getElementById('searchInput').value;
-                        highlightTextOnPage(page, viewport, query);
-                    }
-                }
-            });
-        });
+            await page.render(renderContext).promise;
+            canvas.setAttribute('data-rendered', 'true');
+            
+            // Re-apply highlights if search is active
+            const query = document.getElementById('searchInput').value;
+            if (query.length > 2) highlightOnPage(globalIndex, query);
+
+        } catch (e) {
+            console.error("Render error", e);
+        }
     }
 
-    // --- SEARCH LOGIC ---
+    // --- SCROLL SPY ---
+    function updatePageIndicator() {
+        // Find which page is currently centered
+        const container = document.getElementById('feedContainer');
+        const scrollPos = document.getElementById('scrollWindow').scrollTop + (window.innerHeight / 2);
+        
+        // Simple approximation or find element closest to scrollPos
+        // We'll use the Intersection logic to update specific elements, 
+        // but for the badge we can iterate children or just use a basic calculation.
+        // For efficiency, let's just grab the center element using document.elementFromPoint
+        
+        const centerEl = document.elementFromPoint(window.innerWidth / 2, window.innerHeight / 2);
+        const pageContainer = centerEl ? centerEl.closest('.page-container') : null;
+        
+        if (pageContainer) {
+            const idx = parseInt(pageContainer.dataset.globalIndex);
+            const map = pageMap[idx];
+            document.getElementById('pageIndicator').innerText = `Part ${map.docIndex + 1} • Page ${map.pageIndex}`;
+        }
+    }
+
+    // --- SEARCH ---
     async function performGlobalSearch() {
         const query = document.getElementById('searchInput').value.trim().toLowerCase();
         if (!query) return;
 
-        // Check if loading is done
-        if (totalLoaded < totalParts) {
-            document.getElementById('systemStatus').innerText = "Still indexing... search may be incomplete.";
-        } else {
-            document.getElementById('systemStatus').innerText = "Scanning...";
-        }
-
+        const btn = document.querySelector('.btn-primary');
+        const originalText = btn.innerText;
+        btn.innerText = "...";
+        
         searchResults = [];
         currentMatchIndex = -1;
-        document.getElementById('prevMatchBtn').disabled = true;
-        document.getElementById('nextMatchBtn').disabled = true;
-        document.getElementById('matchCounter').innerText = "";
-
-        // Scan loaded docs
-        for (let pIdx = 0; pIdx < docs.length; pIdx++) {
-            const docData = docs[pIdx];
-            if (!docData || docData.error) continue;
-
-            for (let pg = 1; pg <= docData.totalPages; pg++) {
-                if (pg % 50 === 0) await new Promise(r => setTimeout(r, 0)); // UI Breath
-                
-                const page = await docData.pdf.getPage(pg);
-                const textContent = await page.getTextContent();
-                const textStr = textContent.items.map(s => s.str).join(' ').toLowerCase();
-
-                if (textStr.includes(query)) {
-                    searchResults.push({ partIndex: pIdx, pageIndex: pg });
-                }
+        
+        // Scan text content
+        // Note: This can take time. We do it async.
+        for (let i = 0; i < totalGlobalPages; i++) {
+            if (i % 50 === 0) await new Promise(r => setTimeout(r, 0)); // UI Breath
+            
+            const map = pageMap[i];
+            const page = await map.doc.getPage(map.pageIndex);
+            const textContent = await page.getTextContent();
+            const str = textContent.items.map(s => s.str).join(' ').toLowerCase();
+            
+            if (str.includes(query)) {
+                searchResults.push(i);
+                highlightOnPage(i, query); // Pre-highlight if rendered
             }
         }
 
+        btn.innerText = originalText; // Reset button
+
         if (searchResults.length > 0) {
-            document.getElementById('systemStatus').innerText = `Found ${searchResults.length} matches.`;
             document.getElementById('prevMatchBtn').disabled = false;
             document.getElementById('nextMatchBtn').disabled = false;
-            navigateMatch(1); // Jump to first
+            navigateMatch(1);
         } else {
-            document.getElementById('systemStatus').innerText = "No matches found.";
+            alert("No matches found.");
+            document.getElementById('matchCounter').innerText = "0/0";
         }
     }
 
-    function navigateMatch(direction) {
+    function navigateMatch(dir) {
         if (searchResults.length === 0) return;
-
-        if (currentMatchIndex === -1 && direction === 1) currentMatchIndex = 0;
-        else currentMatchIndex += direction;
-
+        currentMatchIndex += dir;
         if (currentMatchIndex >= searchResults.length) currentMatchIndex = 0;
         if (currentMatchIndex < 0) currentMatchIndex = searchResults.length - 1;
 
         document.getElementById('matchCounter').innerText = `${currentMatchIndex + 1}/${searchResults.length}`;
-
-        const match = searchResults[currentMatchIndex];
-        currentPartIndex = match.partIndex;
-        currentPageIndex = match.pageIndex;
-        renderCurrentPage();
+        
+        const globalIndex = searchResults[currentMatchIndex];
+        const el = document.getElementById(`page-${globalIndex}`);
+        
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Force render if not triggered yet
+        renderPage(globalIndex, el);
+        // Ensure highlight is drawn
+        const query = document.getElementById('searchInput').value;
+        highlightOnPage(globalIndex, query);
     }
 
-    // --- HIGHLIGHTER ---
-    async function highlightTextOnPage(page, viewport, query) {
+    async function highlightOnPage(globalIndex, query) {
+        const div = document.getElementById(`page-${globalIndex}`);
+        const hlLayer = div.querySelector('.highlight-layer');
+        hlLayer.innerHTML = '';
+        
+        const map = pageMap[globalIndex];
+        const page = await map.doc.getPage(map.pageIndex);
         const textContent = await page.getTextContent();
-        const textItems = textContent.items;
-        const searchStr = query.toLowerCase();
-        const highlightLayer = document.getElementById('highlightLayer');
+        const str = query.toLowerCase();
 
-        for (let i = 0; i < textItems.length; i++) {
-            const item = textItems[i];
-            if (item.str.toLowerCase().includes(searchStr)) {
+        // Get viewport for math
+        const canvas = div.querySelector('canvas');
+        if (!canvas || !canvas.width) return; // Page not rendered yet
+        
+        // We need to reconstruct the viewport used for the canvas
+        // This is tricky because we dynamically sized it.
+        // Reverse engineer from CSS width
+        const cssWidth = parseFloat(canvas.style.width);
+        const unscaledViewport = page.getViewport({ scale: 1 });
+        const scale = cssWidth / unscaledViewport.width;
+        const viewport = page.getViewport({ scale: scale });
+
+        textContent.items.forEach(item => {
+            if (item.str.toLowerCase().includes(str)) {
                 const tx = item.transform;
-                const fontHeight = Math.sqrt(tx[2] * tx[2] + tx[3] * tx[3]);
-                const pdfRect = [
-                    tx[4], tx[5], 
-                    tx[4] + item.width, 
-                    tx[5] + (item.height || fontHeight)
-                ];
-                
+                const fontHeight = Math.sqrt(tx[2]*tx[2] + tx[3]*tx[3]);
+                const pdfRect = [tx[4], tx[5], tx[4] + item.width, tx[5] + (item.height || fontHeight)];
                 const rect = viewport.convertToViewportRectangle(pdfRect);
-                const div = document.createElement('div');
-                div.className = 'highlight-box';
                 
+                const box = document.createElement('div');
+                box.className = 'highlight-box';
                 const x = Math.min(rect[0], rect[2]);
                 const y = Math.min(rect[1], rect[3]);
                 const w = Math.abs(rect[0] - rect[2]);
                 const h = Math.abs(rect[1] - rect[3]);
-
-                div.style.left = `${x}px`;
-                div.style.top = `${y - h}px`; 
-                div.style.width = `${w}px`;
-                div.style.height = `${h}px`;
-
-                highlightLayer.appendChild(div);
+                
+                box.style.left = `${x}px`; box.style.top = `${y - h}px`;
+                box.style.width = `${w}px`; box.style.height = `${h}px`;
+                hlLayer.appendChild(box);
             }
-        }
+        });
     }
 
     window.onload = init;
