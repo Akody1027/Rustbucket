@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home Remedies</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Playground X - Remedy Viewer</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -13,105 +13,113 @@
             --primary: #2563eb;
             --highlight: #fde047;
             --bg: #1e293b;
-            --panel: #f8fafc;
+            --glass: rgba(255, 255, 255, 0.95);
+            --shadow: 0 4px 20px rgba(0,0,0,0.15);
         }
 
         body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', sans-serif;
+            margin: 0; padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background-color: var(--bg);
             height: 100vh;
+            overflow: hidden; /* Prevent body scroll, we scroll the container */
             display: flex;
             flex-direction: column;
-            overflow: hidden;
         }
 
-        /* --- Toolbar --- */
-        .toolbar {
-            background: white;
-            padding: 1rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        /* --- 1. TOP SEARCH BAR (Fixed) --- */
+        .top-bar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            padding: 10px 15px;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             display: flex;
-            gap: 15px;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .search-row-1 {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .search-row-2 {
+            display: flex;
+            justify-content: space-between;
             align-items: center;
-            z-index: 10;
-        }
-
-        .nav-controls { display: flex; gap: 10px; align-items: center; }
-        
-        .page-badge {
-            background: #e2e8f0;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: bold;
-            color: #334155;
-            white-space: nowrap;
-        }
-
-        .search-wrapper {
-            position: relative;
-            flex-grow: 1;
-            max-width: 600px;
+            font-size: 0.8rem;
+            color: #64748b;
         }
 
         #searchInput {
-            width: 60%;
-            padding: 12px 20px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
+            flex-grow: 1;
+            padding: 10px 15px;
+            border: 1px solid #cbd5e1;
+            border-radius: 25px;
             font-size: 16px;
             outline: none;
+            background: #f8fafc;
         }
+        #searchInput:focus { border-color: var(--primary); background: white; }
 
-        #searchInput:focus { border-color: var(--primary); }
-
-        button {
-            padding: 10px 20px;
+        .btn-primary {
             background: var(--primary);
             color: white;
             border: none;
-            border-radius: 6px;
+            border-radius: 25px;
+            padding: 0 20px;
             font-weight: 600;
             cursor: pointer;
-            transition: opacity 0.2s;
         }
 
-        button:disabled { opacity: 0.5; cursor: wait; }
-        button:hover:not(:disabled) { opacity: 0.9; }
-
-        .status-bar {
-            background: #0f172a;
-            color: #94a3b8;
-            font-size: 0.8rem;
-            padding: 5px 20px;
-            text-align: right;
-            border-top: 1px solid #334155;
+        .match-controls {
+            display: flex;
+            gap: 5px;
+            align-items: center;
         }
 
-        /* --- Main Viewer --- */
+        .btn-icon {
+            background: #e2e8f0;
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+            color: #334155;
+        }
+        .btn-icon:disabled { opacity: 0.3; }
+
+        /* --- 2. MAIN VIEWER --- */
         #viewerContainer {
             flex-grow: 1;
             overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-top: 100px; /* Space for top bar */
+            padding-bottom: 100px; /* Space for bottom bar */
             display: flex;
             justify-content: center;
-            padding: 0rem;
-            position: relative;
-            background-color: #334155; /* Dark background for reading */
-            margin-bottom: 0px
+            background-color: #334155;
         }
 
         #pdfWrapper {
-        
             position: relative;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
-            margin-top:40px;
-            margin-bottom: 600px;
-            padding-bottom: 100px;
+            background: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            /* Initial size, JS will adjust */
+            width: 100%;
+            max-width: 1000px;
+            align-self: flex-start; 
         }
 
-        canvas { display: block; }
+        canvas { display: block; width: 100%; height: auto; }
 
         #highlightLayer {
             position: absolute;
@@ -125,28 +133,74 @@
             opacity: 0.4;
             border: 1px solid #eab308;
         }
+
+        /* --- 3. BOTTOM FLOATING NAV --- */
+        .bottom-nav {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            padding: 10px 20px;
+            border-radius: 50px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 100;
+            white-space: nowrap;
+        }
+
+        .page-badge {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #334155;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .btn-nav {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .btn-nav:active { transform: scale(0.95); }
+
+        /* Loading Bar */
+        #loadingBar {
+            position: fixed;
+            top: 0; left: 0; height: 3px; background: #22c55e;
+            width: 0%; transition: width 0.3s; z-index: 101;
+        }
     </style>
 </head>
 <body>
 
-    <div class="toolbar">
-        <div class="nav-controls">
-            <button onclick="navigate(-1)">Previous</button>
-            <span id="partInfo" class="page-badge">Loading...</span>
-            <button onclick="navigate(1)">Next</button>
-        </div>
+    <div id="loadingBar"></div>
 
-
-        <div class="search-wrapper">
-            <input type="text" id="searchInput" placeholder="Search (e.g. Headache)..." onkeydown="if(event.key === 'Enter') performGlobalSearch()">
-            
-            <span id="matchCounter" style="margin: 0 10px; font-size: 0.85rem; color: #334155; font-weight: bold;"></span>
-            <button id="prevMatchBtn" onclick="navigateMatch(-1)" disabled style="padding: 5px 10px;">&uarr;</button>
-            <button id="nextMatchBtn" onclick="navigateMatch(1)" disabled style="padding: 5px 10px;">&darr;</button>
-            <button onclick="performGlobalSearch()">Search</button>
+    <div class="top-bar">
+        <div class="search-row-1">
+            <input type="text" id="searchInput" placeholder="Search remedies..." onkeydown="if(event.key === 'Enter') performGlobalSearch()">
+            <button class="btn-primary" onclick="performGlobalSearch()">Go</button>
         </div>
-        
-        
+        <div class="search-row-2">
+            <span id="systemStatus" style="flex-grow:1;">Loading...</span>
+            <div class="match-controls">
+                <span id="matchCounter" style="margin-right:8px; font-weight:bold;"></span>
+                <button class="btn-icon" id="prevMatchBtn" onclick="navigateMatch(-1)" disabled>&uarr;</button>
+                <button class="btn-icon" id="nextMatchBtn" onclick="navigateMatch(1)" disabled>&darr;</button>
+            </div>
+        </div>
     </div>
 
     <div id="viewerContainer">
@@ -156,65 +210,97 @@
         </div>
     </div>
 
-    <div class="status-bar" id="systemStatus">Initializing System...</div>
+    <div class="bottom-nav">
+        <button class="btn-nav" onclick="navigate(-1)">&larr;</button>
+        <span id="partInfo" class="page-badge">Pg 1</span>
+        <button class="btn-nav" onclick="navigate(1)">&rarr;</button>
+    </div>
 
 <script>
     // --- CONFIGURATION ---
-    // Generates filenames: Part_1_Homeremedies.pdf ... Part_11_Homeremedies.pdf
     const totalParts = 11;
     const filePattern = (n) => `Part_${n}_Homeremedies.pdf`;
 
     // --- STATE ---
-    let docs = []; // Array to hold the loaded PDF document objects
-    let currentPartIndex = 0; // 0 to 10
-    let currentPageIndex = 1; // 1-based page number
-    let scale = .60;
+    // We pre-fill the array with nulls so we can load them out of order if needed
+    let docs = new Array(totalParts).fill(null); 
+    let currentPartIndex = 0;
+    let currentPageIndex = 1;
     let isRendering = false;
-    let pendingRender = null;
-    // --- SEARCH STATE ---
     let searchResults = [];
     let currentMatchIndex = -1;
-    
-    // --- INITIALIZATION ---
+    let totalLoaded = 0;
+
+    // --- INITIALIZATION (Progressive Loading) ---
     async function init() {
         const status = document.getElementById('systemStatus');
-        const partInfo = document.getElementById('partInfo');
         
-        status.innerText = `Loading ${totalParts} PDF parts into memory...`;
+        // 1. Load Part 1 IMMEDIATELY so user can read
+        status.innerText = "Opening Book...";
+        await loadPart(0); // Load index 0 (Part 1)
         
-        try {
-            // Load all documents sequentially to ensure order
-            for (let i = 1; i <= totalParts; i++) {
-                const filename = filePattern(i);
-                try {
-                    const doc = await pdfjsLib.getDocument(filename).promise;
-                    docs.push({
-                        id: i,
-                        filename: filename,
-                        pdf: doc,
-                        totalPages: doc.numPages
-                    });
-                    partInfo.innerText = `Loaded Part ${i}/${totalParts}`;
-                } catch (e) {
-                    console.error(`Failed to load ${filename}`, e);
-                    docs.push(null); // Placeholder for failed load
-                }
-            }
-
-            status.innerText = "Ready. 11 Parts Loaded.";
+        // 2. Render Page 1 immediately
+        if(docs[0]) {
             renderCurrentPage();
-
-        } catch (error) {
-            console.error(error);
-            status.innerText = "Critical Error: Could not load PDFs.";
+            status.innerText = "Indexing remaining pages...";
+        } else {
+            status.innerText = "Error loading Part 1.";
+            return;
         }
+
+        // 3. Load the rest in the background
+        loadRemainingParts();
+        
+        // 4. Resize listener
+        window.addEventListener('resize', () => {
+            if(!isRendering) renderCurrentPage();
+        });
+    }
+
+    async function loadPart(index) {
+        const partNum = index + 1;
+        const filename = filePattern(partNum);
+        try {
+            const doc = await pdfjsLib.getDocument(filename).promise;
+            docs[index] = {
+                id: partNum,
+                filename: filename,
+                pdf: doc,
+                totalPages: doc.numPages
+            };
+            totalLoaded++;
+            updateProgressBar();
+            return true;
+        } catch (e) {
+            console.error(`Failed to load ${filename}`, e);
+            docs[index] = { error: true, totalPages: 0 }; // Mark as failed but don't break loop
+            return false;
+        }
+    }
+
+    async function loadRemainingParts() {
+        for (let i = 1; i < totalParts; i++) {
+            await loadPart(i);
+            // Optional: slight delay to keep UI responsive on very slow phones
+            await new Promise(r => setTimeout(r, 50));
+        }
+        document.getElementById('systemStatus').innerText = "Ready. Search available.";
+        setTimeout(() => { document.getElementById('loadingBar').style.width = '0%'; }, 500);
+    }
+
+    function updateProgressBar() {
+        const pct = (totalLoaded / totalParts) * 100;
+        document.getElementById('loadingBar').style.width = `${pct}%`;
     }
 
     // --- NAVIGATION LOGIC ---
     function navigate(offset) {
         if (isRendering) return;
 
-        const currentDoc = docs[currentPartIndex];
+        // Check if current doc is loaded
+        let currentDoc = docs[currentPartIndex];
+        if (!currentDoc || currentDoc.error) return;
+
         const newPage = currentPageIndex + offset;
 
         // 1. Simple page turn within current doc
@@ -224,20 +310,29 @@
             return;
         }
 
-        // 2. Jump to Previous Part (End)
+        // 2. Jump to Previous Part
         if (newPage < 1) {
             if (currentPartIndex > 0) {
+                // Check if previous part is ready
+                if (!docs[currentPartIndex - 1]) {
+                    alert("Previous chapter is still loading...");
+                    return;
+                }
                 currentPartIndex--;
-                // Go to the last page of the previous part
                 currentPageIndex = docs[currentPartIndex].totalPages;
                 renderCurrentPage();
             }
             return;
         }
 
-        // 3. Jump to Next Part (Start)
+        // 3. Jump to Next Part
         if (newPage > currentDoc.totalPages) {
-            if (currentPartIndex < docs.length - 1) {
+            if (currentPartIndex < totalParts - 1) {
+                // Check if next part is ready
+                if (!docs[currentPartIndex + 1]) {
+                    alert("Next chapter is still loading...");
+                    return;
+                }
                 currentPartIndex++;
                 currentPageIndex = 1;
                 renderCurrentPage();
@@ -246,158 +341,125 @@
         }
     }
 
-    // --- RENDERING LOGIC ---
-
-    // --- HIGH-DEF RENDERING LOGIC ---
+    // --- RENDER LOGIC (Responsive) ---
     function renderCurrentPage() {
         isRendering = true;
         const docObj = docs[currentPartIndex];
         
-        document.getElementById('partInfo').innerText = `Part ${docObj.id} - Pg ${currentPageIndex}/${docObj.totalPages}`;
+        if(!docObj) return;
+
+        document.getElementById('partInfo').innerText = `Pt ${docObj.id} • Pg ${currentPageIndex}`;
         
         docObj.pdf.getPage(currentPageIndex).then(page => {
             const canvas = document.getElementById('the-canvas');
             const ctx = canvas.getContext('2d');
-            const wrapper = document.getElementById('pdfWrapper');
             const container = document.getElementById('viewerContainer');
 
-            // 1. Get the device pixel ratio (1 for standard, 2 or 3 for Retina/4K)
+            // High DPI & Responsive Logic
             const dpr = window.devicePixelRatio || 1;
+            let availableWidth = container.clientWidth - 20; // 20px padding
+            if (availableWidth > 1000) availableWidth = 1000; // Max width cap
 
-            // 2. Calculate available width 
-            let availableWidth = container.clientWidth - 40; 
-            if (availableWidth > 1000) availableWidth = 1000;
-
-            // 3. Get unscaled viewport
             const unscaledViewport = page.getViewport({ scale: 1 });
-            
-            // 4. Calculate scale to fit width
             const scaleFactor = availableWidth / unscaledViewport.width;
-            
-            // 5. Create viewport for CSS dimensions (what you see)
             const viewport = page.getViewport({ scale: scaleFactor });
 
-            // 6. Set Canvas dimensions:
-            // CSS width/height = logical size (for layout)
+            // Set dimensions
             canvas.style.width = `${Math.floor(viewport.width)}px`;
             canvas.style.height = `${Math.floor(viewport.height)}px`;
-            
-            // Internal width/height = multiplied by DPR (for sharpness)
             canvas.width = Math.floor(viewport.width * dpr);
             canvas.height = Math.floor(viewport.height * dpr);
 
-            // 7. Adjust highlights layer to match CSS size
+            // Reset Highlights
             const highlightLayer = document.getElementById('highlightLayer');
             highlightLayer.style.width = `${Math.floor(viewport.width)}px`;
             highlightLayer.style.height = `${Math.floor(viewport.height)}px`;
             highlightLayer.innerHTML = '';
 
-            // 8. Render with transform to account for high-DPI
             const renderContext = {
                 canvasContext: ctx,
                 viewport: viewport,
-                transform: [dpr, 0, 0, dpr, 0, 0] // Magic sauce for sharpness
+                transform: [dpr, 0, 0, dpr, 0, 0]
             };
 
             page.render(renderContext).promise.then(() => {
                 isRendering = false;
-                const query = document.getElementById('searchInput').value;
-                if(query.length > 2) highlightTextOnPage(page, viewport, query);
+                container.scrollTop = 0; // Scroll to top on page change
+                
+                // Re-apply highlight if needed
+                if(currentMatchIndex !== -1) {
+                    const match = searchResults[currentMatchIndex];
+                    if(match.partIndex === currentPartIndex && match.pageIndex === currentPageIndex) {
+                        const query = document.getElementById('searchInput').value;
+                        highlightTextOnPage(page, viewport, query);
+                    }
+                }
             });
         });
     }
 
-
-
-
-
-    
-
-    // --- GLOBAL SEARCH LOGIC ---
-    // --- IMPROVED SEARCH: FIND ALL ---
+    // --- SEARCH LOGIC ---
     async function performGlobalSearch() {
         const query = document.getElementById('searchInput').value.trim().toLowerCase();
         if (!query) return;
 
-        const status = document.getElementById('systemStatus');
-        const counter = document.getElementById('matchCounter');
-        
-        status.innerText = `Scanning all files...`;
-        counter.innerText = "Scanning...";
-        
-        // 1. Reset results
+        // Check if loading is done
+        if (totalLoaded < totalParts) {
+            document.getElementById('systemStatus').innerText = "Still indexing... search may be incomplete.";
+        } else {
+            document.getElementById('systemStatus').innerText = "Scanning...";
+        }
+
         searchResults = [];
         currentMatchIndex = -1;
         document.getElementById('prevMatchBtn').disabled = true;
         document.getElementById('nextMatchBtn').disabled = true;
+        document.getElementById('matchCounter').innerText = "";
 
-        // 2. Scan every page
+        // Scan loaded docs
         for (let pIdx = 0; pIdx < docs.length; pIdx++) {
             const docData = docs[pIdx];
-            if (!docData) continue;
+            if (!docData || docData.error) continue;
 
             for (let pg = 1; pg <= docData.totalPages; pg++) {
-                // UI Breather (prevents freezing)
-                if (pg % 20 === 0) await new Promise(r => setTimeout(r, 0));
+                if (pg % 50 === 0) await new Promise(r => setTimeout(r, 0)); // UI Breath
                 
                 const page = await docData.pdf.getPage(pg);
                 const textContent = await page.getTextContent();
                 const textStr = textContent.items.map(s => s.str).join(' ').toLowerCase();
 
                 if (textStr.includes(query)) {
-                    // Store every match found
                     searchResults.push({ partIndex: pIdx, pageIndex: pg });
                 }
             }
         }
 
-        // 3. Handle Results
         if (searchResults.length > 0) {
-            status.innerText = `Found ${searchResults.length} matches.`;
+            document.getElementById('systemStatus').innerText = `Found ${searchResults.length} matches.`;
             document.getElementById('prevMatchBtn').disabled = false;
             document.getElementById('nextMatchBtn').disabled = false;
-            // Jump to first match
-            navigateMatch(1); 
+            navigateMatch(1); // Jump to first
         } else {
-            status.innerText = "No matches found.";
-            counter.innerText = "0 / 0";
+            document.getElementById('systemStatus').innerText = "No matches found.";
         }
     }
-
-
-
 
     function navigateMatch(direction) {
         if (searchResults.length === 0) return;
 
-        // Move index forward or backward
-        // Note: The logic handles the initial state (-1) by starting at 0
-        if (currentMatchIndex === -1 && direction === 1) {
-            currentMatchIndex = 0;
-        } else {
-            currentMatchIndex += direction;
-        }
+        if (currentMatchIndex === -1 && direction === 1) currentMatchIndex = 0;
+        else currentMatchIndex += direction;
 
-        // Loop around if we hit the end
         if (currentMatchIndex >= searchResults.length) currentMatchIndex = 0;
         if (currentMatchIndex < 0) currentMatchIndex = searchResults.length - 1;
 
-        // Update UI Counter
-        document.getElementById('matchCounter').innerText = `${currentMatchIndex + 1} / ${searchResults.length}`;
+        document.getElementById('matchCounter').innerText = `${currentMatchIndex + 1}/${searchResults.length}`;
 
-        // Jump to the specific PDF Part and Page
         const match = searchResults[currentMatchIndex];
         currentPartIndex = match.partIndex;
         currentPageIndex = match.pageIndex;
         renderCurrentPage();
     }
-
-
-
-
-
-
-    
 
     // --- HIGHLIGHTER ---
     async function highlightTextOnPage(page, viewport, query) {
@@ -410,7 +472,6 @@
             const item = textItems[i];
             if (item.str.toLowerCase().includes(searchStr)) {
                 const tx = item.transform;
-                // Approximate width/height if not provided by PDF
                 const fontHeight = Math.sqrt(tx[2] * tx[2] + tx[3] * tx[3]);
                 const pdfRect = [
                     tx[4], tx[5], 
@@ -422,7 +483,6 @@
                 const div = document.createElement('div');
                 div.className = 'highlight-box';
                 
-                // Normalization
                 const x = Math.min(rect[0], rect[2]);
                 const y = Math.min(rect[1], rect[3]);
                 const w = Math.abs(rect[0] - rect[2]);
@@ -438,28 +498,8 @@
         }
     }
 
-    // Start the engine
     window.onload = init;
-
 </script>
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
