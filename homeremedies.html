@@ -156,6 +156,8 @@
     // Search State
     let searchResults = [];
     let currentMatchIndex = -1;
+    let globalTextIndex = []; 
+    let isIndexing = false;
 
     // --- INIT ---
     async function init() {
@@ -183,6 +185,8 @@
         
         // 4. Update Page Indicator on Scroll
         document.getElementById('scrollWindow').addEventListener('scroll', updatePageIndicator);
+
+        buildSearchIndex();
     }
 
     async function loadAllDocsMetadata() {
@@ -203,6 +207,40 @@
             }
         }
     }
+
+
+
+
+    async function buildSearchIndex() {
+        isIndexing = true;
+        // Pre-fill the array so it matches our total pages
+        globalTextIndex = new Array(totalGlobalPages).fill(""); 
+        
+        for (let i = 0; i < totalGlobalPages; i++) {
+            try {
+                const map = pageMap[i];
+                const page = await map.doc.getPage(map.pageIndex);
+                const textContent = await page.getTextContent();
+                
+                // Join text with spaces to create a single searchable string per page
+                globalTextIndex[i] = textContent.items.map(s => s.str).join(' ').toLowerCase();
+            } catch (e) {
+                console.error(`Failed to index page ${i}`, e);
+            }
+            
+            // CRITICAL: Let the main thread breathe for 10ms so the UI doesn't freeze
+            await new Promise(r => setTimeout(r, 10)); 
+        }
+        
+        isIndexing = false;
+        console.log("Background search indexing complete. Ready for instant search.");
+    }
+
+
+
+
+
+    
 
     function buildSkeleton() {
         const container = document.getElementById('feedContainer');
@@ -357,7 +395,14 @@
         }
     }
 
+
+
+
+
+
+    
     // --- SEARCH ---
+
     async function performGlobalSearch() {
         const query = document.getElementById('searchInput').value.trim().toLowerCase();
         if (!query) return;
@@ -369,19 +414,10 @@
         searchResults = [];
         currentMatchIndex = -1;
         
-        // Scan text content
-        // Note: This can take time. We do it async.
+        // Instant search against our background-built index
         for (let i = 0; i < totalGlobalPages; i++) {
-            if (i % 50 === 0) await new Promise(r => setTimeout(r, 0)); // UI Breath
-            
-            const map = pageMap[i];
-            const page = await map.doc.getPage(map.pageIndex);
-            const textContent = await page.getTextContent();
-            const str = textContent.items.map(s => s.str).join(' ').toLowerCase();
-            
-            if (str.includes(query)) {
+            if (globalTextIndex[i] && globalTextIndex[i].includes(query)) {
                 searchResults.push(i);
-                highlightOnPage(i, query); // Pre-highlight if rendered
             }
         }
 
@@ -392,11 +428,18 @@
             document.getElementById('nextMatchBtn').disabled = false;
             navigateMatch(1);
         } else {
-            alert("No matches found.");
+            let msg = "No matches found.";
+            if (isIndexing) msg += " (Still building background index, try again in a few seconds)";
+            alert(msg);
             document.getElementById('matchCounter').innerText = "0/0";
         }
     }
 
+
+
+
+
+    
     function navigateMatch(dir) {
         if (searchResults.length === 0) return;
         currentMatchIndex += dir;
@@ -464,6 +507,7 @@
 
 </body>
 </html>
+
 
 
 
