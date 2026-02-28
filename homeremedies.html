@@ -232,22 +232,46 @@
         }
     }
 
-    // --- THE BUFFER LOGIC ---
+
+
+    
+
     function handleIntersection(entries, observer) {
         entries.forEach(entry => {
+            const div = entry.target;
+            const index = parseInt(div.dataset.globalIndex);
+            const canvas = div.querySelector('canvas');
+
             if (entry.isIntersecting) {
                 // Page is near viewport -> RENDER
-                const div = entry.target;
-                const index = parseInt(div.dataset.globalIndex);
                 renderPage(index, div);
             } else {
-                // Optional: Page is far away -> UNLOAD (to save memory)
-                // For modern phones, 300 pages might hold in memory, but clearing canvas is safer
-                // To keep it simple/smooth, we won't aggressively unload yet, 
-                // but this is where you'd clear the canvas width/height to 0.
+                // Page is far away -> UNLOAD (to save memory)
+                if (canvas && canvas.getAttribute('data-rendered') === 'true') {
+                    // 1. Lock the container height to prevent scrollbar jumping (layout shift)
+                    div.style.minHeight = `${canvas.clientHeight}px`;
+
+                    // 2. Wipe the canvas dimensions to force browser garbage collection
+                    canvas.width = 0;
+                    canvas.height = 0;
+                    
+                    // 3. Clear the 2D context memory
+                    const ctx = canvas.getContext('2d');
+                    if (ctx) {
+                        ctx.clearRect(0, 0, 0, 0);
+                    }
+
+                    // 4. Reset the attribute so the app knows to re-render it when scrolled back into view
+                    canvas.removeAttribute('data-rendered');
+                    
+                    // 5. Clear highlights to save DOM nodes
+                    const hlLayer = div.querySelector('.highlight-layer');
+                    if (hlLayer) hlLayer.innerHTML = '';
+                }
             }
         });
     }
+
 
 
 
@@ -440,5 +464,6 @@
 
 </body>
 </html>
+
 
 
